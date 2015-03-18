@@ -4,8 +4,8 @@ WWW-Challonge
 Perl wrapper for the Challonge API. Challonge is a tournament bracket
 generator used by many gaming tournaments around the world.
 
-	http://challonge.com
-	http://api.challonge.com/v1
+* http://challonge.com
+* http://api.challonge.com/v1
 
 INSTALLATION
 ------------
