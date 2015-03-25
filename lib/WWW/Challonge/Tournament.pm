@@ -6,7 +6,7 @@ use warnings;
 
 =head1 NAME
 
-WWW::Challonge::Tournament - The great new WWW::Challonge::Tournament!
+WWW::Challonge::Tournament - A class representing a single Challonge tournament.
 
 =head1 VERSION
 
@@ -16,30 +16,21 @@ Version 0.01
 
 our $VERSION = '0.01';
 
-
-=head1 SYNOPSIS
-
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
-    use WWW::Challonge::Tournament;
-
-    my $foo = WWW::Challonge::Tournament->new();
-    ...
-
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 new
+
+Takes a hashref representing the tournament and turns it into an object.
+
+	my $t = WWW::Challonge::Tournament->new($tournament);
 
 =cut
 
-sub function1 {
+sub new
+{
+	my $class = shift;
+	my $tournament = shift;
+	bless $tournament, $class;
 }
 
 =head2 function2
@@ -59,15 +50,11 @@ Please report any bugs or feature requests to C<bug-www-challonge at rt.cpan.org
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WWW-Challonge::Tournament>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-
-
-
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
     perldoc WWW::Challonge::Tournament
-
 
 You can also look for information at:
 
@@ -91,9 +78,22 @@ L<http://search.cpan.org/dist/WWW-Challonge::Tournament/>
 
 =back
 
+=head1 SEE ALSO
+
+=over 4
+
+=item L<WWW::Challonge>
+
+=item L<WWW::Challonge::Participant>
+
+=item L<WWW::Challonge::Match>
+
+=back
 
 =head1 ACKNOWLEDGEMENTS
 
+Everyone on the L<Challonge|http://challonge.com> team for making such a great
+service.
 
 =head1 LICENSE AND COPYRIGHT
 

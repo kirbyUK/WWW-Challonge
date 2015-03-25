@@ -1,5 +1,7 @@
 package WWW::Challonge;
+use WWW::Challonge::Tournament;
 use REST::Client;
+use JSON qw/from_json/;
 
 use 5.006;
 use strict;
@@ -139,6 +141,73 @@ Gets all tournaments created under the given subdomian.
 
 sub index
 {
+	my $self = shift;
+	my $options = shift // {};
+
+	# Get the key and the client:
+	my $key = $self->{key};
+	my $client = $self->{client};
+
+	# The intial request URL:
+	my $req = "/tournaments.json?api_key=$key";
+
+	# Loop through the options (if any) and add them on:
+	for my $option(keys %{$options})
+	{
+		# Validate the input:
+		if($option =~ /^state$/)
+		{
+			if($options->{option} !~ /^all|pending|in_progress|ended$/)
+			{
+				print STDERR "Error: Argument '" . $options->{option} .
+					"' for option '$option' is invalid.";
+			}
+		}
+		elsif($option =~ /^type$/)
+		{
+			if($options->{option} !~ /^(single|double)_elimination|round_robin|swiss$/)
+			{
+				print STDERR "Error: Argument '" . $options->{option} .
+					"' for option '$option' is invalid.";
+			}
+		}
+		elsif($option =~ /^created_(before|after)$/)
+		{
+			if($options->{option} !~ /^\d{4}-\d{2}-\d{2}$/)
+			{
+				print STDERR "Error: Argument '" . $options->{option} .
+					"' for option '$option' is invalid.";
+			}
+		}
+		elsif($option =~ /^subdomain$/)
+		{
+			if($options->{option} !~ /^[a-zA-Z0-9_]*$/)
+			{
+				print STDERR "Error: Argument '" . $options->{option} .
+					"' for option '$option' is invalid.";
+			}
+		}
+		else
+		{
+			print STDERR "Error: Option '$option' is invalid.";
+			return undef;
+		}
+
+		$req .= "&" . $option . "=" . $options->{$option};
+	}
+
+	# Make the request:
+	$client->GET($req);
+
+	# Make a new tournament object for every tourney returned:
+	my @tournaments;
+	for my $tournament(@{from_json($client->responseContent())})
+	{
+		push @tournaments, WWW::Challonge::Tournament->new($tournament);
+	}
+
+	# Return the array of tournaments:
+	return \@tournaments;
 }
 
 =head2 show
