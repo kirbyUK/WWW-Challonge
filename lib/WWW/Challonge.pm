@@ -56,7 +56,7 @@ sub new
 	if($client->responseCode() eq '401')
 	{
 		# If it isn't, warn the user and exit:
-		warn "Error: Challonge API key is invalid";
+		print STDERR "Error: Challonge API key is invalid.\n";
 		return undef;
 	}
 
