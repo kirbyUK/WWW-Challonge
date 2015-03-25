@@ -25,23 +25,16 @@ Perhaps a little code snippet.
 
     use WWW::Challonge;
 
-    my $c = WWW::Challonge->new({
-		username => $username,
-		api_key => $key
-	});
+    my $c = WWW::Challonge->new($api_key)
     ...
 
 =head1 SUBROUTINES/METHODS
 
 =head2 new
 
-Creates a new C<WWW::Challonge> object. Takes in a username and api key, both
-of which are required:
+Creates a new C<WWW::Challonge> object. Takes in an API key, which is required:
 
-    my $c = WWW::Challonge->new({
-		username => $username,
-		api_key => $key
-	});
+    my $c = WWW::Challonge->new($api_key);
 
 =cut
 
