@@ -1,4 +1,5 @@
 package WWW::Challonge;
+use REST::Client;
 
 use 5.006;
 use strict;
@@ -40,6 +41,28 @@ Creates a new C<WWW::Challonge> object. Takes in an API key, which is required:
 
 sub new
 {
+	# Get the API key:
+	my $class = shift;
+	my $key = shift;
+
+	# Create a REST client to interface Challonge:
+	my $client = REST::Client->new();
+	$client->setHost("https://api.challonge.com/v1");
+
+	# Try to get some content and check the response code:
+	$client->GET("/tournaments.json?api_key=$key");
+
+	# Check to see if the API key is valid:
+	if($client->responseCode() eq '401')
+	{
+		# If it isn't, warn the user and exit:
+		warn "Error: Challonge API key is invalid";
+		return undef;
+	}
+
+	# Otherwise, keep the key and the client in an object and return:
+	my $c = { key => $key, client => $client };
+	bless $c, $class;
 }
 
 =head2 index
