@@ -157,7 +157,7 @@ sub index
 		# Validate the input:
 		if($option =~ /^state$/)
 		{
-			if($options->{option} !~ /^all|pending|in_progress|ended$/)
+			if($options->{$option} !~ /^all|pending|in_progress|ended$/)
 			{
 				print STDERR "Error: Argument '" . $options->{option} .
 					"' for option '$option' is invalid.";
@@ -165,7 +165,7 @@ sub index
 		}
 		elsif($option =~ /^type$/)
 		{
-			if($options->{option} !~ /^(single|double)_elimination|round_robin|swiss$/)
+			if($options->{$option} !~ /^(single|double)_elimination|round_robin|swiss$/)
 			{
 				print STDERR "Error: Argument '" . $options->{option} .
 					"' for option '$option' is invalid.";
@@ -173,7 +173,7 @@ sub index
 		}
 		elsif($option =~ /^created_(before|after)$/)
 		{
-			if($options->{option} !~ /^\d{4}-\d{2}-\d{2}$/)
+			if($options->{$option} !~ /^\d{4}-\d{2}-\d{2}$/)
 			{
 				print STDERR "Error: Argument '" . $options->{option} .
 					"' for option '$option' is invalid.";
@@ -181,7 +181,7 @@ sub index
 		}
 		elsif($option =~ /^subdomain$/)
 		{
-			if($options->{option} !~ /^[a-zA-Z0-9_]*$/)
+			if($options->{$option} !~ /^[a-zA-Z0-9_]*$/)
 			{
 				print STDERR "Error: Argument '" . $options->{option} .
 					"' for option '$option' is invalid.";
