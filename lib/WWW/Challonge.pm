@@ -216,10 +216,36 @@ Gets a single C<WWW::Challonge::Tournament> object by the given id or URL:
 
 	my $tourney = $c->show("sample_tournament_1");
 
+If the tournament has a subdomain (e.g. test.challonge.com/mytourney), simply
+specify like so:
+
+	my $tourney = $c->show("test-mytourney")
+
 =cut
 
 sub show
 {
+	my $self = shift;
+	my $url = shift;
+	print "$url\n";
+
+	# Get the key and REST client:
+	my $key = $self->{key};
+	my $client = $self->{client};
+
+	# Try to get the tournament:
+	$client->GET("/tournaments/$url.json?api_key=$key");
+
+	# Check for any errors:
+	if($client->responseCode eq '404')
+	{
+		print STDERR "Error: Tournament '$url' not found.\n";
+		return undef;
+	}
+
+	# Otherwise create a tourney with the object and return it:
+	my $tourney = WWW::Challonge::Tournament->new(from_json($client->responseContent));
+	return \$tourney;
 }
 
 =head1 AUTHOR
