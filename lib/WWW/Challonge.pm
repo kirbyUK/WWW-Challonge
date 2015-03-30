@@ -248,6 +248,188 @@ sub show
 	return \$tourney;
 }
 
+=head2 create
+
+Creates a new tournament, and returns it as a C<WWW::Challonge::Tournament>
+object. It takes an hashref of arguments, all optional
+
+=over 4
+
+=item name
+
+A string containing the name of the tournament.
+
+=item tournament_type
+
+A string containing one of the following, detailing the type of tournament.
+
+=over 4
+
+=item single elimination (default)
+
+=item double elimination
+
+=item round robin
+
+=item swiss
+
+=back
+
+=item url
+
+The url of the tournament, containing only letters, numbers and underscores.
+
+=item subdomain
+
+The subdomain of the tournament (requires write access to the given subdomain).
+
+=item description
+
+The description of the tournament to be displayed above the bracket.
+
+=item open_signup
+
+True/false. Have Challonge host a sign-up page (otherwise, manually add
+participants).
+
+=item hold_third_place_match
+
+True/false. Single elimination only. Hold a match for semifinals losers to
+determine third place? Default is false.
+
+=item pts_for_match_win
+
+Decimal (to the nearest tenth). Number of points gained on winning a match.
+Swiss only. Default is 1.0.
+
+=item pts_for_match_tie
+
+Decimal (to the nearest tenth). Number of points gained on drawing a match.
+Swiss only. Default is 0.5.
+
+=item pts_for_game_win
+
+Decimal (to the nearest tenth). Number of points gained on winning a single
+game within a match. Swiss only. Default is 0.0.
+
+=item pts_for_game_tie
+
+Decimal (to the nearest tenth). Number of points gained on drawing a single
+game within a match. Swiss only. Default is 0.0.
+
+=item pts_for_bye
+
+Decimal (to the nearest tenth). Number of points gained on getting a bye.
+Swiss only. Default is 1.0.
+
+=item swiss_rounds
+
+Integer. Number of swiss rounds to play. Swiss only. It is recommended that
+the number of rounds is limited to no more than two thirds of the number of
+players, otherwise an impossible pairing situation may occur and the
+tournament may end prematurely.
+
+=item ranked_by
+
+How the tournament is ranked. Can be one of the following.
+
+=over 4
+
+=item match wins
+
+=item game wins
+
+=item points scored
+
+=item points difference
+
+=item custom
+
+=back
+
+=item rr_pts_for_match_win
+
+Decimal (to the nearest tenth). Number of points gained by winning a match.
+Round Robin 'custom' only. Default is 1.0.
+
+=item rr_pts_for_match_tie
+
+Decimal (to the nearest tenth). Number of points gained by drawing a match.
+Round Robin 'custom' only. Default is 0.5.
+
+=item rr_pts_for_game_win
+
+Decimal (to the nearest tenth). Number of points gained by winning a single
+game within a match. Round Robin 'custom' only. Default is 0.0.
+
+=item rr_pts_for_game_tie
+
+Decimal (to the nearest tenth). Number of points gained by drawing a single
+game within a match. Round Robin 'custom' only. Default is 0.0.
+
+=item accept_attachments
+
+True/false. Allow match attachment uploads. Default is false.
+
+=item hide_forum
+
+True/false. Hide the forum tab on your Challonge page. Default is false.
+
+=item show_rounds
+
+True/false. Label each round about the bracket. Single and double elimination
+only. Default is false.
+
+=item private
+
+True/false. Hide this tournament from the public browsable index and your
+profile. Default is false.
+
+=item notify_users_when_matches_open
+
+True/false. Send registered Challonge users an email when matches open up
+for them. Default is false.
+
+=item nofity_users_when_the_tournament_ends
+
+True/false. Send registered Challonge users an email with the results when
+the tournament ends. Default is false.
+
+=item sequential_pairings
+
+True/false. Instead of following traditional seeding rules, make the pairings
+go straight down the list of participants. For example, the first match will
+be the first seed versus the second. Default is false.
+
+=item signup_cap
+
+Integer. The maximum number of participants. Any additional participants will
+go on a waiting list.
+
+=item start_at
+
+DateTime. The planned time to start the tournament. Timezone defaults to
+Eastern (EST).
+
+=item check_in_duration
+
+Integer. The length of the check-in window in minutes.
+
+=back
+
+	my $tournament = $c->create({
+		name => "sample tournament",
+		url => "sample_tournament_1",
+		type => "double elimination"
+	});
+
+=cut
+
+sub create
+{
+	my $self = shift;
+}
+
 =head1 AUTHOR
 
 Alex Kerr, C<< <kirby at cpan.org> >>
