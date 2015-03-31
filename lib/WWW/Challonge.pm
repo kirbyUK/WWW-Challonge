@@ -1,7 +1,7 @@
 package WWW::Challonge;
 use WWW::Challonge::Tournament;
 use REST::Client;
-use JSON qw/from_json/;
+use JSON qw/to_json from_json/;
 
 use 5.006;
 use strict;
@@ -251,7 +251,8 @@ sub show
 =head2 create
 
 Creates a new tournament, and returns it as a C<WWW::Challonge::Tournament>
-object. It takes an hashref of arguments, all optional
+object. It takes an hashref of arguments. The name and URL are required, all
+others are optional.
 
 =over 4
 
@@ -428,6 +429,162 @@ Integer. The length of the check-in window in minutes.
 sub create
 {
 	my $self = shift;
+	my $args = shift;
+
+	# Get the key and REST client:
+	my $key = $self->{key};
+	my $client = $self->{client};
+
+	# Fail if name and URL aren't given:
+	if((! defined $args->{name}) && (! defined $args->{url}))
+	{
+		print STDERR "Error: Name and URL are required to create a ",
+			"tournament.\n";
+		return undef;
+	}
+
+	# The possible parameters, grouped together by the kind of input they take.
+	# This is used for input vaidation.
+	my %valid_args = (
+		string => [
+			"name",
+			"tournament_type",
+			"url",
+			"subdomain",
+			"description",
+			"ranked_by",
+		],
+		integer => [
+			"swiss_rounds",
+			"signup_cap",
+			"check_in_duration",
+		],
+		decimal => [
+			"pts_for_match_win",
+			"pts_for_match_tie",
+			"pts_for_game_win",
+			"pts_for_game_tie",
+			"pts_for_bye",
+			"rr_pts_for_match_win",
+			"rr_pts_for_match_tie",
+			"rr_pts_for_game_win",
+			"rr_pts_for_game_tie",
+		],
+		bool => [
+			"open_signup",
+			"hold_third_place_match",
+			"accept_attachments",
+			"hide_forum",
+			"show_rounds",
+			"private",
+			"notify_users_when_matches_open",
+			"notify_users_when_the_tournament_ends",
+			"sequential_pairings",
+		],
+		datetime => [
+			"start_at"
+		],
+	);
+
+	# Validate the inputs:
+	for my $arg(@{$valid_args{string}})
+	{
+		next unless(defined $args->{$arg});
+		# Most of the string-based arguments require individual validation
+		# based on what they are:
+		if($arg =~ /^tournament_type$/)
+		{
+			if($args->{$arg} !~ /^((single|double) elimination)|(round robin)|
+				(swiss)$/i)
+			{
+				print STDERR "Error: Value '", $args->{$arg}, "' is invalid ",
+					"for argument '", $arg, "'\n";
+			}
+		}
+		elsif($arg =~ /^url$/)
+		{
+			if($args->{$arg} !~ /^[a-zA-Z0-9_]*$/)
+			{
+				print STDERR "Error: Value '", $args->{$arg}, "' is not a ",
+					"valid URL.\n";
+			}
+		}
+		elsif($arg =~ /^ranked_by$/)
+		{
+			if($args->{$arg} !~ /^((match|game) wins)|
+				(points (scored|difference))|custom/i)
+			{
+				print STDERR "Error: Value '", $args->{$arg}, "' is invalid ",
+					"for argument '", $arg, "'\n";
+			}
+		}
+	}
+	for my $arg(@{$valid_args{integer}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is an integer:
+		if($args->{$arg} !~ /^\d*$/)
+		{
+			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+				"integer for argument '", $arg, "'\n";
+		}
+	}
+	for my $arg(@{$valid_args{decimal}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is an integer or decimal:
+		if($args->{$arg} !~ /^\d*\.?\d*$/)
+		{
+			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+				"decimal for argument '", $arg, "'\n";
+		}
+		else
+		{
+			$args->{$arg} = sprintf("%.1f", $args->{$arg});
+		}
+	}
+	for my $arg(@{$valid_args{boolean}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is true or false:
+		if($args->{$arg} !~ /^(true|false)$/i)
+		{
+			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+				"for argument '", $arg, "'. It should be 'true' or 'false'.\n";
+		}
+	}
+	for my $arg(@{$valid_args{datetime}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is a valid datetime:
+#		if($args->{$arg} !~ /^$/)
+#		{
+#			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+#				"for argument '", $arg, "'. It should be 'true' or 'false'.\n";
+#		}
+	}
+
+	# Add in the API key and convert to a POST request:
+	my $params = { api_key => $key, tournament => $args };
+
+	# Now we have all the arguments validated, send the POST request:
+	$client->POST("/tournaments.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check for any errors:
+	if($client->responseCode >= 300)
+	{
+		my $error = from_json($client->responseContent)->{errors}->[0];
+		if($error =~ /taken/)
+		{
+			print STDERR "Error: URL '", $args->{url}, "' is already taken\n";
+		}
+		return undef;
+	}
+
+	# Otherwise, make a tournament object and return it:
+	my $t = WWW::Challonge::Tournament->new(from_json($client->responseContent));
+	return $t;
 }
 
 =head1 AUTHOR
