@@ -203,7 +203,8 @@ sub index
 	my @tournaments;
 	for my $tournament(@{from_json($client->responseContent())})
 	{
-		push @tournaments, WWW::Challonge::Tournament->new($tournament);
+		push @tournaments, WWW::Challonge::Tournament->new($tournament,
+			$key, $client);
 	}
 
 	# Return the array of tournaments:
@@ -227,7 +228,6 @@ sub show
 {
 	my $self = shift;
 	my $url = shift;
-	print "$url\n";
 
 	# Get the key and REST client:
 	my $key = $self->{key};
@@ -244,8 +244,9 @@ sub show
 	}
 
 	# Otherwise create a tourney with the object and return it:
-	my $tourney = WWW::Challonge::Tournament->new(from_json($client->responseContent));
-	return \$tourney;
+	my $tourney = WWW::Challonge::Tournament->new(
+		from_json($client->responseContent), $key, $client);
+	return $tourney;
 }
 
 =head2 create
@@ -596,7 +597,8 @@ sub create
 	}
 
 	# Otherwise, make a tournament object and return it:
-	my $t = WWW::Challonge::Tournament->new(from_json($client->responseContent));
+	my $t = WWW::Challonge::Tournament->new(
+		from_json($client->responseContent), $key, $client);
 	return $t;
 }
 

@@ -4,6 +4,8 @@ use 5.006;
 use strict;
 use warnings;
 
+sub __is_kill;
+
 =head1 NAME
 
 WWW::Challonge::Tournament - A class representing a single Challonge tournament.
@@ -20,9 +22,11 @@ our $VERSION = '0.01';
 
 =head2 new
 
-Takes a hashref representing the tournament and turns it into an object.
+Takes a hashref representing the tournament, the API key and the REST client
+and turns it into an object. This is mostly used by the module itself, to
+create a new tournament see L<WWW::Challonge/create>.
 
-	my $t = WWW::Challonge::Tournament->new($tournament);
+	my $t = WWW::Challonge::Tournament->new($tournament, $key, $client);
 
 =cut
 
@@ -30,14 +34,62 @@ sub new
 {
 	my $class = shift;
 	my $tournament = shift;
-	bless $tournament, $class;
+	my $key = shift;
+	my $client = shift;
+
+	my $t =
+	{
+		alive => 1,
+		client => $client,
+		tournament => $tournament->{tournament},
+		key => $key,
+	};
+	bless $t, $class;
 }
 
-=head2 function2
+=head2 destroy
+
+Deletes the tournament from the user's account. There is no undo, so use with
+care!
+
+	$t->destroy;
+
+	# $t still contains the tournament, but any future operations will fail:
+	$t->update({ name => "sample_tournament_2" }); # ERROR!
 
 =cut
 
-sub function2 {
+sub destroy
+{
+	my $self = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and tournament URL:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Make the DELETE call:
+	$client->DELETE("/tournaments/$url.json?api_key=$key");
+
+	# Set the tournament to dead to prevent further operations:
+	$self->{alive} = 0;
+}
+
+=head2 __is_kill
+
+Returns an error explaining that the current tournament has been destroyed and
+returns undef, used so a function doesn't attempt to operate on a tournament
+that has been successfully destroyed.
+
+=cut
+
+sub __is_kill
+{
+	print STDERR "Error: Tournament has been destroyed\n";
+	return undef;
 }
 
 =head1 AUTHOR
