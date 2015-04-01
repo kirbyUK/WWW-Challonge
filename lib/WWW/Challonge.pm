@@ -288,6 +288,10 @@ The subdomain of the tournament (requires write access to the given subdomain).
 
 The description of the tournament to be displayed above the bracket.
 
+=item game_name
+
+The name of the game or sport being played.
+
 =item open_signup
 
 True/false. Have Challonge host a sign-up page (otherwise, manually add
@@ -452,6 +456,7 @@ sub create
 			"url",
 			"subdomain",
 			"description",
+			"game_name",
 			"ranked_by",
 		],
 		integer => [
@@ -492,7 +497,15 @@ sub create
 		next unless(defined $args->{$arg});
 		# Most of the string-based arguments require individual validation
 		# based on what they are:
-		if($arg =~ /^tournament_type$/)
+		if($arg =~ /^name$/)
+		{
+			if(length $args->{$arg} > 60)
+			{
+				print STDERR "Error: Name '", $args->{$arg}, " is longer than ",
+					"60 characters";
+			}
+		}
+		elsif($arg =~ /^tournament_type$/)
 		{
 			if($args->{$arg} !~ /^((single|double) elimination)|(round robin)|
 				(swiss)$/i)
