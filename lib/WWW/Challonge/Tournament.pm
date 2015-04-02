@@ -138,6 +138,63 @@ sub destroy
 	$self->{alive} = 0;
 }
 
+=head2 process_check_ins
+
+This should be invoked after a tournament's check-in window closes, but before
+the tournament is started. It then does the following:
+
+=over 4
+
+=item 1
+
+Marks participants who have not checked in as inactive.
+
+=item 2
+
+Moves inactive participants to the bottom seeds.
+
+=item 3
+
+Transitions the tournament state from "checking_in" to "checked_in".
+
+=end
+
+=cut
+
+sub process_check_ins
+{
+	my $self = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and tournament URL:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Send the API key:
+	my $params = { api_key => $key };
+
+	# Make the POST call:
+	$client->POST("/tournaments/$url/process_check_ins.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->errors;
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, update the object's store of the tournament:
+	$self->{tournament}->{state} = "checked_in";
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
