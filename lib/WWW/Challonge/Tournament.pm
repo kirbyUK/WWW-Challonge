@@ -89,7 +89,7 @@ sub update
 	# Check if it was successful:
 	if($client->responseCode > 300)
 	{
-		my $errors = from_json($client->responseContent)->errors;
+		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
 			print STDERR "Error: $error\n";
@@ -131,7 +131,7 @@ sub destroy
 	# Check if it was successful:
 	if($client->responseCode > 300)
 	{
-		my $errors = from_json($client->responseContent)->errors;
+		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
 			print STDERR "Error: $error\n";
@@ -190,7 +190,7 @@ sub process_check_ins
 	# Check if it was successful:
 	if($client->responseCode > 300)
 	{
-		my $errors = from_json($client->responseContent)->errors;
+		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
 			print STDERR "Error: $error\n";
@@ -246,7 +246,7 @@ sub abort_check_in
 	# Check if it was successful:
 	if($client->responseCode > 300)
 	{
-		my $errors = from_json($client->responseContent)->errors;
+		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
 			print STDERR "Error: $error\n";
@@ -256,6 +256,48 @@ sub abort_check_in
 
 	# If so, update the object's store of the tournament:
 	$self->{tournament}->{state} = "pending";
+}
+
+=head2 start
+
+Starts a tournament, opening up matches for score reporting. The tournament
+must have at least 2 participants. If successful, sets the status of the
+tournament to "in_progress".
+
+=cut
+
+sub start
+{
+	my $self = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and tournament URL:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Send the API key:
+	my $params = { api_key => $key };
+
+	# Make the POST call:
+	$client->POST("/tournaments/$url/start.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, update the object's store of the tournament:
+	$self->{tournament}->{state} = "in_progress";
 }
 
 =head2 __is_kill
