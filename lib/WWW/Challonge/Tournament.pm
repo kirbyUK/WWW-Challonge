@@ -3,8 +3,10 @@ package WWW::Challonge::Tournament;
 use 5.006;
 use strict;
 use warnings;
+use JSON qw/to_json from_json/;
 
 sub __is_kill;
+sub __tournament_args_are_valid;
 
 =head1 NAME
 
@@ -47,6 +49,53 @@ sub new
 	bless $t, $class;
 }
 
+=head2 update
+
+Updates specific attributes of a tournament. For a full list, see
+L<WWW::Challonge/create>. Unlike that method, however, all of the arguments
+are optional.
+
+=cut
+
+sub update
+{
+	my $self = shift;
+	my $args = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and tournament url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Check the arguments and values are valid:
+	return undef
+		unless(WWW::Challonge::Tournament::__tournament_args_are_valid($args));
+
+	# Add the API key and put everything else in a 'tournament' hash:
+	my $params = { api_key => $key, tournament => $args };
+
+	# Make the PUT request:
+	$client->PUT("/tournaments/$url.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->errors;
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, update the object's store of the tournament:
+	$self->{tournament} = from_json($client->responseContent)->{tournament};
+}
+
 =head2 destroy
 
 Deletes the tournament from the user's account. There is no undo, so use with
@@ -74,6 +123,17 @@ sub destroy
 	# Make the DELETE call:
 	$client->DELETE("/tournaments/$url.json?api_key=$key");
 
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->errors;
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
 	# Set the tournament to dead to prevent further operations:
 	$self->{alive} = 0;
 }
@@ -90,6 +150,182 @@ sub __is_kill
 {
 	print STDERR "Error: Tournament has been destroyed\n";
 	return undef;
+}
+
+=head2 __tournament_args_are_valid
+
+Checks if the passed arguments and values are valid for creating or updating
+a tournament.
+
+=cut
+
+sub __tournament_args_are_valid
+{
+	my $args = shift;
+
+	# The possible parameters, grouped together by the kind of input they take.
+	# This is used for input vaidation.
+	my %valid_args = (
+		string => [
+			"name",
+			"tournament_type",
+			"url",
+			"subdomain",
+			"description",
+			"game_name",
+			"ranked_by",
+		],
+		integer => [
+			"swiss_rounds",
+			"signup_cap",
+			"check_in_duration",
+		],
+		decimal => [
+			"pts_for_match_win",
+			"pts_for_match_tie",
+			"pts_for_game_win",
+			"pts_for_game_tie",
+			"pts_for_bye",
+			"rr_pts_for_match_win",
+			"rr_pts_for_match_tie",
+			"rr_pts_for_game_win",
+			"rr_pts_for_game_tie",
+		],
+		bool => [
+			"open_signup",
+			"hold_third_place_match",
+			"accept_attachments",
+			"hide_forum",
+			"show_rounds",
+			"private",
+			"notify_users_when_matches_open",
+			"notify_users_when_the_tournament_ends",
+			"sequential_pairings",
+		],
+		datetime => [
+			"start_at"
+		],
+	);
+
+	# Validate the inputs:
+	for my $arg(@{$valid_args{string}})
+	{
+		next unless(defined $args->{$arg});
+		# Most of the string-based arguments require individual validation
+		# based on what they are:
+		if($arg =~ /^name$/)
+		{
+			if(length $args->{$arg} > 60)
+			{
+				print STDERR "Error: Name '", $args->{$arg}, " is longer than ",
+					"60 characters";
+				return undef;
+			}
+		}
+		elsif($arg =~ /^tournament_type$/)
+		{
+			if($args->{$arg} !~ /^((single|double) elimination)|(round robin)|
+				(swiss)$/i)
+			{
+				print STDERR "Error: Value '", $args->{$arg}, "' is invalid ",
+					"for argument '", $arg, "'\n";
+				return undef;
+			}
+		}
+		elsif($arg =~ /^url$/)
+		{
+			if($args->{$arg} !~ /^[a-zA-Z0-9_]*$/)
+			{
+				print STDERR "Error: Value '", $args->{$arg}, "' is not a ",
+					"valid URL.\n";
+				return undef;
+			}
+		}
+		elsif($arg =~ /^ranked_by$/)
+		{
+			if($args->{$arg} !~ /^((match|game) wins)|
+				(points (scored|difference))|custom/i)
+			{
+				print STDERR "Error: Value '", $args->{$arg}, "' is invalid ",
+					"for argument '", $arg, "'\n";
+				return undef;
+			}
+		}
+	}
+	for my $arg(@{$valid_args{integer}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is an integer:
+		if($args->{$arg} !~ /^\d*$/)
+		{
+			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+				"integer for argument '", $arg, "'\n";
+			return undef;
+		}
+	}
+	for my $arg(@{$valid_args{decimal}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is an integer or decimal:
+		if($args->{$arg} !~ /^\d*\.?\d*$/)
+		{
+			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+				"decimal for argument '", $arg, "'\n";
+			return undef;
+		}
+		else
+		{
+			$args->{$arg} = sprintf("%.1f", $args->{$arg});
+		}
+	}
+	for my $arg(@{$valid_args{boolean}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is true or false:
+		if($args->{$arg} !~ /^(true|false)$/i)
+		{
+			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+				"for argument '", $arg, "'. It should be 'true' or 'false'.\n";
+			return undef;
+		}
+	}
+	for my $arg(@{$valid_args{datetime}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is a valid datetime:
+#		if($args->{$arg} !~ /^$/)
+#		{
+#			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+#				"for argument '", $arg, "'. It should be 'true' or 'false'.\n";
+#			return undef;
+#		}
+	}
+
+	# Finally, check if there are any unrecognised arguments, but just ignore
+	# them instead of erroring out:
+	my @accepted_inputs = (
+		@{$valid_args{string}},
+		@{$valid_args{integer}},
+		@{$valid_args{decimal}},
+		@{$valid_args{boolean}},
+		@{$valid_args{datetime}}
+	);
+	my $is_valid = 0;
+	for my $arg(keys %{$args})
+	{
+		for my $valid_arg(@accepted_inputs)
+		{
+			if($arg eq $valid_arg)
+			{
+				$is_valid = 1;
+				last;
+			}
+		}
+		print STDERR "Warning: Ignoring unknown argument '", $arg, "'\n"
+			unless($is_valid);
+		$is_valid = 0;
+	}
+	return 1;
 }
 
 =head1 AUTHOR
