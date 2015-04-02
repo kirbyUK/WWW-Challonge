@@ -195,6 +195,60 @@ sub process_check_ins
 	$self->{tournament}->{state} = "checked_in";
 }
 
+=head2 abort_check_in
+
+Aborts the check-in process if the tournament's status is currently
+"checking_in" or "checked_in". This is useful as you cannot edit the
+tournament's start time during this state. It does the following:
+
+=over 4
+
+=item 1
+
+Makes all participants active and clears their "checked_in_at" times.
+
+=item 2
+
+Sets the tournament state from "checking_in" or "checked_in" to "pending".
+
+=end
+
+=cut
+
+sub abort_check_in
+{
+	my $self = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and tournament URL:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Send the API key:
+	my $params = { api_key => $key };
+
+	# Make the POST call:
+	$client->POST("/tournaments/$url/abort_check_in.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->errors;
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, update the object's store of the tournament:
+	$self->{tournament}->{state} = "pending";
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
