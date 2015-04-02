@@ -55,6 +55,11 @@ Updates specific attributes of a tournament. For a full list, see
 L<WWW::Challonge/create>. Unlike that method, however, all of the arguments
 are optional.
 
+	$t->update({
+		name => "sample_tournament_2",
+		type => "swiss",
+	});
+
 =cut
 
 sub update
@@ -159,6 +164,8 @@ Transitions the tournament state from "checking_in" to "checked_in".
 
 =end
 
+	$t->process_check_ins;
+
 =cut
 
 sub process_check_ins
@@ -212,6 +219,8 @@ Makes all participants active and clears their "checked_in_at" times.
 Sets the tournament state from "checking_in" or "checked_in" to "pending".
 
 =end
+
+	$t->abort_check_in;
 
 =cut
 
