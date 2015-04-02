@@ -300,6 +300,47 @@ sub start
 	$self->{tournament}->{state} = "in_progress";
 }
 
+=head2 finalize
+
+Finalises a tournament that has had all match scores submitted, rendering the
+results permenant. If successful, it sets the status to "ended".
+
+=cut
+
+sub finalize
+{
+	my $self = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and tournament URL:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Send the API key:
+	my $params = { api_key => $key };
+
+	# Make the POST call:
+	$client->POST("/tournaments/$url/finalize.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, update the object's store of the tournament:
+	$self->{tournament}->{state} = "ended";
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
