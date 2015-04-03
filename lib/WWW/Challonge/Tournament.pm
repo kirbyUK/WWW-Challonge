@@ -388,6 +388,174 @@ sub reset
 	$self->{tournament}->{state} = "ended";
 }
 
+=head2 attributes
+
+Gets all the attributes of the tournament in a hashref. Contains the following
+fields.
+
+=over 4
+
+=item accepting_predictions
+
+=item accept_attachments
+
+=item allow_participant_match_reporting
+
+=item anonymous_voting
+
+=item category
+
+=item check_in_duration
+
+=item completed_at
+
+=item created_at
+
+=item created_by_api
+
+=item credit_capped
+
+=item description
+
+=item description_source
+
+=item full_challonge_url
+
+=item game_id
+
+=item game_name
+
+=item group_stages_enabled
+
+=item group_stages_were_started
+
+=item hide_forum
+
+=item hide_seeds
+
+=item hold_third_place_match
+
+=item id
+
+=item live_image_url
+
+=item max_predictions_per_user
+
+=item name
+
+=item notify_users_when_match_opens
+
+=item notify_users_when_the_tournament_ends
+
+=item open_signup
+
+=item participants_count
+
+=item participants_locked
+
+=item participants_swappable
+
+=item prediction_method
+
+=item predictions_opened_at
+
+=item private
+
+=item progress_meter
+
+=item pts_for_bye
+
+=item pts_for_game_tie
+
+=item pts_for_game_win
+
+=item pts_for_match_tie
+
+=item pts_for_match_win
+
+=item quick_advance
+
+=item ranked_by
+
+=item review_before_finalizing
+
+=item require_score_agreement
+
+=item rr_pts_for_game_tie
+
+=item rr_pts_for_game_win
+
+=item rr_pts_for_match_tie
+
+=item rr_pts_for_match_win
+
+=item sequential pairings
+
+=item show_rounds
+
+=item signup_cap
+
+=item sign_up_url
+
+=item start_at
+
+=item started_at
+
+=item started_checking_in_at
+
+=item state
+
+=item swiss_rounds
+
+=item subdomain
+
+=item teams
+
+=item team_convertable
+
+=item tie_breaks
+
+=item tournament_type
+
+=item updated_at
+
+=item url
+
+=end
+
+	my $attr = $t->attributes;
+	print $attr->{name}, "\n";
+
+=cut
+
+sub attributes
+{
+	my $self = shift;
+
+	# Get the key, REST client and url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Get the most recent version:
+	$client->GET("/tournaments/$url.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# Save the most recent version and return it:
+	$self->{tournament} = from_json($client->responseContent)->{tournament};
+	return $self->{tournament};
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
