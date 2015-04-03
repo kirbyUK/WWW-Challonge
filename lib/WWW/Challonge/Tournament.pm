@@ -3,6 +3,8 @@ package WWW::Challonge::Tournament;
 use 5.006;
 use strict;
 use warnings;
+use WWW::Challonge::Participant;
+use WWW::Challonge::Match;
 use JSON qw/to_json from_json/;
 
 sub __is_kill;
@@ -532,6 +534,9 @@ sub attributes
 {
 	my $self = shift;
 
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
 	# Get the key, REST client and url:
 	my $key = $self->{key};
 	my $client = $self->{client};
@@ -554,6 +559,54 @@ sub attributes
 	# Save the most recent version and return it:
 	$self->{tournament} = from_json($client->responseContent)->{tournament};
 	return $self->{tournament};
+}
+
+=head2 participant_index
+
+Returns an arrayref of C<WWW::Challonge::Participant> objects for every
+participant in the tourney.
+
+	my $p = $t->participant_index;
+	for my $participant(@{$p})
+	{
+		...
+
+=cut
+
+sub participant_index
+{
+	my $self = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Make the GET request:
+	$client->GET("/tournaments/$url/participants.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, make an object for every participant:
+	my $participants = [];
+	for my $participant(@{from_json($client->responseContent)})
+	{
+		push @{$participants}, WWW::Challonge::Participant->new($participant,
+			$key, $client);
+	}
+	return $participants;
 }
 
 =head2 __is_kill

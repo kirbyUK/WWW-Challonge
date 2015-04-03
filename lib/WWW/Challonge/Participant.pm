@@ -6,7 +6,8 @@ use warnings;
 
 =head1 NAME
 
-WWW::Challonge::Participant - The great new WWW::Challonge::Participant!
+WWW::Challonge::Participant - A class representing a single participant within
+a Challonge tournament.
 
 =head1 VERSION
 
@@ -16,30 +17,34 @@ Version 0.01
 
 our $VERSION = '0.01';
 
-
-=head1 SYNOPSIS
-
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
-    use WWW::Challonge::Participant;
-
-    my $foo = WWW::Challonge::Participant->new();
-    ...
-
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
 =head1 SUBROUTINES/METHODS
 
 =head2 function1
 
+Takes a hashref representing the participant, the API key and the REST client
+and turns it into an object. This is mostly used by the module itself, to
+create a new participant within a tournament see
+L<WWW::Challonge::Tournament/participant_create>.
+
+	my $p = WWW::Challonge::Participant->new($participant, $key, $client);
+
 =cut
 
-sub function1 {
+sub new
+{
+	my $class = shift;
+	my $participant = shift;
+	my $key = shift;
+	my $client = shift;
+
+	my $p =
+	{
+		alive => 1,
+		client => $client,
+		participant => $participant->{participant},
+		key => $key,
+	};
+	bless $p, $class;
 }
 
 =head2 function2
