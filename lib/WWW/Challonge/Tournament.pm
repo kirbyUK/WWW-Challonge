@@ -609,6 +609,48 @@ sub participant_index
 	return $participants;
 }
 
+=head2 participant_show
+
+Returns a single C<WWW::Challonge::Participant> object representing the
+participant with the given unique ID.
+
+	my $p = $t->participant_show(24279875);
+
+=cut
+
+sub participant_show
+{
+	my $self = shift;
+	my $participant = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Make the GET request:
+	$client->GET("/tournaments/$url/participants/$participant.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, create an object and return it:
+	my $p = WWW::Challonge::Participant->new(from_json($client->responseContent),
+		$key, $client);
+	return $p;
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
