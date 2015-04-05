@@ -449,8 +449,7 @@ sub create
 	}
 
 	# Check the arguments and values are valid:
-	return undef
-		unless(WWW::Challonge::Tournament::__tournament_args_are_valid($args));
+	return undef unless(WWW::Challonge::Tournament::__args_are_valid($args));
 
 	# Add in the API key and convert to a POST request:
 	my $params = { api_key => $key, tournament => $args };

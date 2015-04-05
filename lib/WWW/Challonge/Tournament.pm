@@ -8,7 +8,7 @@ use WWW::Challonge::Match;
 use JSON qw/to_json from_json/;
 
 sub __is_kill;
-sub __tournament_args_are_valid;
+sub __args_are_valid;
 
 =head1 NAME
 
@@ -78,8 +78,7 @@ sub update
 	my $url = $self->{tournament}->{url};
 
 	# Check the arguments and values are valid:
-	return undef
-		unless(WWW::Challonge::Tournament::__tournament_args_are_valid($args));
+	return undef unless(WWW::Challonge::Tournament::__args_are_valid($args));
 
 	# Add the API key and put everything else in a 'tournament' hash:
 	my $params = { api_key => $key, tournament => $args };
@@ -651,6 +650,100 @@ sub participant_show
 	return $p;
 }
 
+=head2 participant_create
+
+Adds a new participant to the tournament, and if successful returns the newly
+created C<WWW::Challonge::Participant> object. The possible arguments are as
+follows.
+
+=over 4
+
+=item name
+
+The name of the participant. Required unless I<challonge_username> or I<email>
+are provided. Must be unique within the tournament.
+
+=item challonge_username
+
+If the participant has a valid Challonge account, providing a name will send
+them an invite to join the tournament.
+
+=item email
+
+If the email is attached to a valid Challonge account, it will invite them to
+join the tournament. If not, the 'new-user-email' attribute will be set, and
+an email will be sent to invite the person to join Challonge.
+
+=item seed
+
+Integer. The participant's new seed. Must be between 1 and the new number of
+participants. Overwriting an existing seed will bump up the other participants.
+If none is given, the participant will be given the lowest possible seed (the
+bottom).
+
+=item misc
+
+Miscellaneous notes on a player only accessible via the API. Maximum 255
+characters.
+
+=end
+
+	my $p = $t->participant_create({
+		name => "test",
+		seed => 4
+	});
+
+=cut
+
+sub participant_create
+{
+	my $self = shift;
+	my $args = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Fail if name or challonge_username or email is not provided:
+	unless((defined $args->{name}) || (defined $args->{challonge_username}) ||
+		defined $args->{email})
+	{
+		print STDERR "Error: Name, email or Challonge username are required to
+			create a new participant.\n";
+		return undef;
+	}
+
+	# Check the arguments and values are valid:
+	return undef unless(WWW::Challonge::Participant::__args_are_valid($args));
+
+	# Add in the API key and convert to a POST request:
+	my $params = { api_key => $key, participant => $args };
+
+	# Now we have all the arguments validated, send the POST request:
+	$client->POST("/tournaments/$url/participants.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, create an object and return it:
+	my $p = WWW::Challonge::Participant->new(from_json($client->responseContent),
+		$key, $client);
+	return $p;
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
@@ -665,19 +758,18 @@ sub __is_kill
 	return undef;
 }
 
-=head2 __tournament_args_are_valid
+=head2 __args_are_valid
 
 Checks if the passed arguments and values are valid for creating or updating
 a tournament.
 
 =cut
 
-sub __tournament_args_are_valid
+sub __args_are_valid
 {
 	my $args = shift;
 
 	# The possible parameters, grouped together by the kind of input they take.
-	# This is used for input vaidation.
 	my %valid_args = (
 		string => [
 			"name",

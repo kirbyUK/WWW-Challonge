@@ -4,6 +4,8 @@ use 5.006;
 use strict;
 use warnings;
 
+sub __args_are_valid;
+
 =head1 NAME
 
 WWW::Challonge::Participant - A class representing a single participant within
@@ -52,6 +54,81 @@ sub new
 =cut
 
 sub function2 {
+}
+
+=head2 __args_are_valid
+
+Checks if the passed arguments and values are valid for creating or updating
+a tournament.
+
+=cut
+
+sub __args_are_valid
+{
+	my $args = shift;
+
+	# The possible parameters, grouped together by the kind of input they take.
+	my %valid_args = (
+		string => [
+			"name",
+			"challonge_username",
+			"email",
+			"misc",
+		],
+		integer => [
+			"seed",
+		],
+	);
+
+	# Validate the inputs:
+	for my $arg(@{$valid_args{string}})
+	{
+		next unless(defined $args->{$arg});
+		# Most of the string-based arguments require individual validation
+		# based on what they are:
+		if($arg =~ /^misc$/)
+		{
+			if(length $args->{$arg} > 255)
+			{
+				print STDERR "Error: '$arg' input is too long (max. 255 ", 
+					"characters).\n";
+			}
+		}
+	}
+	for my $arg(@{$valid_args{integer}})
+	{
+		next unless(defined $args->{$arg});
+		# Make sure the argument is an integer:
+		if($args->{$arg} !~ /^\d*$/)
+		{
+			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
+				"integer for argument '", $arg, "'\n";
+			return undef;
+		}
+	}
+
+	# Finally, check if there are any unrecognised arguments, but just ignore
+	# them instead of erroring out:
+	my @accepted_inputs = (
+		@{$valid_args{string}},
+		@{$valid_args{integer}},
+	);
+	my $is_valid = 0;
+	for my $arg(keys %{$args})
+	{
+		for my $valid_arg(@accepted_inputs)
+		{
+			if($arg eq $valid_arg)
+			{
+				$is_valid = 1;
+				last;
+			}
+		}
+		print STDERR "Warning: Ignoring unknown argument '", $arg, "'\n"
+			unless($is_valid);
+		$is_valid = 0;
+	}
+	return 1;
 }
 
 =head1 AUTHOR
