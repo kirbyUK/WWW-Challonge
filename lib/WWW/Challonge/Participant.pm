@@ -3,7 +3,9 @@ package WWW::Challonge::Participant;
 use 5.006;
 use strict;
 use warnings;
+use JSON qw/to_json/;
 
+sub __is_kill;
 sub __args_are_valid;
 
 =head1 NAME
@@ -21,7 +23,7 @@ our $VERSION = '0.01';
 
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 new
 
 Takes a hashref representing the participant, the API key and the REST client
 and turns it into an object. This is mostly used by the module itself, to
@@ -49,11 +51,58 @@ sub new
 	bless $p, $class;
 }
 
-=head2 function2
+=head2 check_in
+
+Checks in the participant to the tournament.
+
+	$p->check_in;
 
 =cut
 
-sub function2 {
+sub check_in
+{
+	my $self = shift;
+
+	# Do not operate on a dead participant:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{participant}->{tournament_id};
+	my $id = $self->{participant}->{id};
+
+	# Add the API key:
+	my $params = to_json({ api_key => $key });
+
+	# Make the POST call:
+	$client->POST("/tournaments/$url/participants/$id/check_in.json", $params,
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+}
+
+=head2 __is_kill
+
+Returns an error explaining that the current tournament has been destroyed and
+returns undef, used so a function doesn't attempt to operate on a tournament
+that has been successfully destroyed.
+
+=cut
+
+sub __is_kill
+{
+	print STDERR "Error: Client has been destroyed\n";
+	return undef;
 }
 
 =head2 __args_are_valid
