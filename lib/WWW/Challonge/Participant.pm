@@ -187,6 +187,48 @@ sub destroy
 	$self->{alive} = 0;
 }
 
+=head2 randomize
+
+Randomises the seeds among participants. Only applicable before a tournament
+has started. Affects all participants in the tournament.
+
+	$p->randomize;
+
+=cut
+
+sub randomize
+{
+	my $self = shift;
+
+	# Do not operate on a dead participant:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and tournament url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{participant}->{tournament_id};
+
+	# Add the API key:
+	my $params = to_json({ api_key => $key });
+
+	# Make the POST call:
+	$client->POST("/tournaments/$url/participants/randomize.json", $params,
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	return 1;
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
