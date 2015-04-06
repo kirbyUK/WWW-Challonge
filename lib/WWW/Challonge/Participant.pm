@@ -143,6 +143,50 @@ sub check_in
 	}
 }
 
+=head2 destroy
+
+If the tournament has not started, deletes the associated participant. If the
+tournament has started, the participant is marked inactive and their matches
+are automatically forfeited.
+
+	$p->destroy;
+
+	# $p still contains the participant, but any future operations will fail:
+	$p->update({ name => "test2" }); # ERROR!
+
+=cut
+
+sub destroy
+{
+	my $self = shift;
+
+	# Do not operate on a dead participant:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{participant}->{tournament_id};
+	my $id = $self->{participant}->{id};
+
+	# Make the DELETE call:
+	$client->DELETE("/tournaments/$url/participants/$id.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, set the alive key to false to prevent further operations:
+	$self->{alive} = 0;
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
