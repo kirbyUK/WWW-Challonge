@@ -229,6 +229,108 @@ sub randomize
 	return 1;
 }
 
+=head2 attributes
+
+Gets all the attributes of the participant in hashref and returns it. Contains
+the following fields:
+
+	my $attr = $p->attributes;
+	print $attr->{name}, "\n";
+
+=over 4
+
+=item active
+
+=item attached_participatable_portrait_url
+
+=item can_check_in
+
+=item challonge_email_address_verified
+
+=item challonge_username
+
+=item checked_in
+
+=item checked_in_at
+
+=item confirm_remove
+
+=item created_at
+
+=item display_name_with_invitation_email_address
+
+=item email_hash
+
+=item final_rank
+
+=item group_id
+
+=item icon
+
+=item id
+
+=item invitation_id
+
+=item invitation_pending
+
+=item invite_email
+
+=item misc
+
+=item name
+
+=item on_waiting_list
+
+=item participatable_or_invitation_attached
+
+=item reactivatable
+
+=item removable
+
+=item seed
+
+=item tournament_id
+
+=item updated_at
+
+=item username
+
+=end
+
+=cut
+
+sub attributes
+{
+	my $self = shift;
+
+	# Do not operate on a dead participant:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{participant}->{tournament_id};
+	my $id = $self->{participant}->{id};
+
+	# Get the most recent version:
+	$client->GET("/tournaments/$url/participants/$id.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, save it and then return it:
+	$self->{participant} = from_json($client->responseContent)->{participant};
+	return $self->{participant};
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
