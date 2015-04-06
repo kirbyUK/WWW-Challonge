@@ -3,7 +3,7 @@ package WWW::Challonge::Participant;
 use 5.006;
 use strict;
 use warnings;
-use JSON qw/to_json/;
+use JSON qw/to_json from_json/;
 
 sub __is_kill;
 sub __args_are_valid;
@@ -49,6 +49,58 @@ sub new
 		key => $key,
 	};
 	bless $p, $class;
+}
+
+=head2 update
+
+Updates specific attributes of a participant. For a full list, see
+L<WWW::Challonge::Tournament/participant_create>. Unlike that method, however,
+all arguments are optional.
+
+	$p->update({
+		name => "test2",
+		seed => 1
+	});
+
+=cut
+
+sub update
+{
+	my $self = shift;
+	my $args = shift;
+
+	# Do not operate on a dead participant:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{participant}->{tournament_id};
+	my $id = $self->{participant}->{id};
+
+	# Check the arguments and values are valid:
+	return undef unless(WWW::Challonge::Participant::__args_are_valid($args));
+
+	# Add the API key and put everything else in a 'participant' hash:
+	my $params = { api_key => $key, participant => $args };
+
+	# Make the PUT request:
+	$client->PUT("/tournaments/$url/participants/$id.json", to_json($params),
+		{ "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, set the object's attributes to the updated version:
+	$self->{participant} = from_json($client->responseContent)->{participant};
 }
 
 =head2 check_in
