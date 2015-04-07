@@ -462,6 +462,18 @@ L<http://search.cpan.org/dist/WWW-Challonge::Participant/>
 
 =back
 
+=head1 SEE ALSO
+
+=over 4
+
+=item L<WWW::Challonge>
+
+=item L<WWW::Challonge::Tournament>
+
+=item L<WWW::Challonge::Match>
+
+=back
+
 
 =head1 ACKNOWLEDGEMENTS
 

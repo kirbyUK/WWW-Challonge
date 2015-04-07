@@ -744,6 +744,55 @@ sub participant_create
 	return $p;
 }
 
+=head2 match_index
+
+Returns an arrayref of C<WWW::Challonge::Match> objects for every
+match in the tourney. The tournament must be in progress before this will
+return anything useful.
+
+	my $m = $t->match_index;
+	for my $match(@{$m})
+	{
+		...
+
+=cut
+
+sub match_index
+{
+	my $self = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Make the GET request:
+	$client->GET("/tournaments/$url/matches.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, make an object for every participant:
+	my $matches = [];
+	for my $match(@{from_json($client->responseContent)})
+	{
+		push @{$matches}, WWW::Challonge::Match->new($match, $key,
+			$client);
+	}
+	return $matches;
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and

@@ -6,7 +6,8 @@ use warnings;
 
 =head1 NAME
 
-WWW::Challonge::Match - The great new WWW::Challonge::Match!
+WWW::Challonge::Participant - A class representing a single participant within
+a Challonge tournament.
 
 =head1 VERSION
 
@@ -16,30 +17,31 @@ Version 0.01
 
 our $VERSION = '0.01';
 
-
-=head1 SYNOPSIS
-
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
-    use WWW::Challonge::Match;
-
-    my $foo = WWW::Challonge::Match->new();
-    ...
-
-=head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 new
+
+Takes a hashref representing the match, the API key and the REST client and
+turns it into an object. This is mostly used by the module itself.
+
+	my $p = WWW::Challonge::Match->new($match, $key, $client);
 
 =cut
 
-sub function1 {
+sub new
+{
+	my $class = shift;
+	my $match = shift;
+	my $key = shift;
+	my $client = shift;
+
+	my $m =
+	{
+		client => $client,
+		match => $match->{match},
+		key => $key,
+	};
+	bless $m, $class;
 }
 
 =head2 function2
@@ -88,6 +90,18 @@ L<http://cpanratings.perl.org/d/WWW-Challonge::Match>
 =item * Search CPAN
 
 L<http://search.cpan.org/dist/WWW-Challonge::Match/>
+
+=back
+
+=head1 SEE ALSO
+
+=over 4
+
+=item L<WWW::Challonge>
+
+=item L<WWW::Challonge::Tournament>
+
+=item L<WWW::Challonge::Participant>
 
 =back
 
