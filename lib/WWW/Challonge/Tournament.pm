@@ -793,6 +793,48 @@ sub match_index
 	return $matches;
 }
 
+=head2 match_show
+
+Returns a single C<WWW::Challonge::Match> object representing the match with
+the given unique ID.
+
+	my $m = $t->match_show(24279875);
+
+=cut
+
+sub match_show
+{
+	my $self = shift;
+	my $match = shift;
+
+	# Do not operate on a dead tournament:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client and url:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament}->{url};
+
+	# Make the GET request:
+	$client->GET("/tournaments/$url/matches/$match.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, create an object and return it:
+	my $m = WWW::Challonge::Match->new(from_json($client->responseContent),
+		$key, $client);
+	return $m;
+}
+
 =head2 __is_kill
 
 Returns an error explaining that the current tournament has been destroyed and
