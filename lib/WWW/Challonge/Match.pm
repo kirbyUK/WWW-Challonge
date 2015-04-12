@@ -69,7 +69,7 @@ Integer. Overwrites the number of votes for player 1.
 
 Integer. Overwrites the number of votes for player 2.
 
-=end
+=back
 
 	# If votes are not given, the argument can simply be an arrayref:
 	$m->update(["1-3", "3-2", "3-0"]);

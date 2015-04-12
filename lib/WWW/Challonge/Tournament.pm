@@ -163,7 +163,7 @@ Moves inactive participants to the bottom seeds.
 
 Transitions the tournament state from "checking_in" to "checked_in".
 
-=end
+=back
 
 	$t->process_check_ins;
 
@@ -219,7 +219,7 @@ Makes all participants active and clears their "checked_in_at" times.
 
 Sets the tournament state from "checking_in" or "checked_in" to "pending".
 
-=end
+=back
 
 	$t->abort_check_in;
 
@@ -522,7 +522,7 @@ fields.
 
 =item url
 
-=end
+=back
 
 	my $attr = $t->attributes;
 	print $attr->{name}, "\n";
@@ -686,7 +686,7 @@ bottom).
 Miscellaneous notes on a player only accessible via the API. Maximum 255
 characters.
 
-=end
+=back
 
 	my $p = $t->participant_create({
 		name => "test",

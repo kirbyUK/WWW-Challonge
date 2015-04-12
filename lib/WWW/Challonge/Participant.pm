@@ -295,7 +295,7 @@ the following fields:
 
 =item username
 
-=end
+=back
 
 =cut
 
