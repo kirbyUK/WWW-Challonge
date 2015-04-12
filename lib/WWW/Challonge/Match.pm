@@ -3,6 +3,9 @@ package WWW::Challonge::Match;
 use 5.006;
 use strict;
 use warnings;
+use JSON qw/to_json from_json/;
+
+sub __args_are_valid;
 
 =head1 NAME
 
@@ -44,11 +47,190 @@ sub new
 	bless $m, $class;
 }
 
-=head2 function2
+=head2 update
+
+Updates the match with the results. Requires an arrayref of comma-seperated
+values and optional arguments for votes. The 'winner_id' is not required as the
+module calculates it. Returns the updated C<WWW::Challonge::Match> object:
+
+=over 4
+
+=item scores_csv
+
+Required. An arrayref containing the match results with the following format -
+"x-y", where x and y are both integers, x being player 1's score and y being
+player 2's.
+
+=item player1_votes
+
+Integer. Overwrites the number of votes for player 1.
+
+=item player2_votes
+
+Integer. Overwrites the number of votes for player 2.
+
+=end
+
+	# If votes are not given, the argument can simply be an arrayref:
+	$m->update(["1-3", "3-2", "3-0"]);
+
+	# Otherwise, a hashref is required:
+	$m->update({
+		scores_csv => ["1-3", "3-2", "3-0"],
+		player1_votes => 2,
+		player2_votes => 1,
+	});
 
 =cut
 
-sub function2 {
+sub update
+{
+	my $self = shift;
+	my $args = shift;
+
+	# Get the key, REST client and match id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{match}->{tournament_id};
+	my $id = $self->{match}->{id};
+
+	my $params = { api_key => $key, match => { } };
+
+	# Check what kind of arguments we are dealing with:
+	if((ref $args eq "ARRAY") || (ref $args eq "HASH"))
+	{
+		# Check we have the mandatory scores:
+		if((ref $args eq "HASH") && ((! defined $args->{scores_csv}) ||
+			(ref $args->{scores_csv} ne "ARRAY")))
+		{
+			print STDERR "Error: Required argument 'scores_csv' as an array ",
+				"reference of scores.\n";
+			return undef;
+		}
+
+		# Check the arguments are valid:
+		return undef unless(__args_are_valid($args));
+
+		# Once everything is good, work out the winner based on the results:
+		my $results = $args;
+		if(ref $args eq "HASH") { $results = $args->{scores_csv}; }
+		my %results = ( p1 => 0, p2 => 0 );
+		for my $result(@{$results})
+		{
+			# Increment the score of whoever has the highest result:
+			my ($p1, $p2) = split '-', $result;
+			($p1 > $p2) ? $results{p1}++ : $results{p2}++;
+		}
+
+		# Save the id of whichever player got the most wins:
+		if($results{p1} > $results{p2})
+		{
+			$params->{match}->{winner_id} = $self->{match}->{player1_id};
+		}
+		elsif($results{p1} < $results{p2})
+		{
+			$params->{match}->{winner_id} = $self->{match}->{player2_id};
+		}
+		else
+		{
+			$params->{match}->{winner_id} = "tie";
+		}
+
+		# Save the scores as a comma-seperated list:
+		$params->{match}->{scores_csv} = join ",", @{$results};
+
+		# Go through and add the prediction arguments if they exist:
+		if(ref $args eq "HASH")
+		{
+			for my $key(keys %{$args})
+			{
+				next unless($key =~ /^player[12]_votes$/);
+				$params->{match}->{$key} = $args->{$key};
+			}
+		}
+
+		# Make the PUT call:
+		$client->PUT("/tournaments/$url/matches/$id.json", to_json($params),
+			{ "Content-Type" => 'application/json' });
+
+		# Check if it was successful:
+		if($client->responseCode > 300)
+		{
+			my $errors = from_json($client->responseContent)->{errors};
+			for my $error(@{$errors})
+			{
+				print STDERR "Error: $error\n";
+			}
+			return undef;
+		}
+
+		# If so, update the store of the match:
+		$self->{match} = from_json($client->responseContent)->{match};
+	}
+	else
+	{
+		# Otherwise, give an error and exit:
+		print STDERR "Error: Expected an arrayref or hashref.\n";
+		return undef;
+	}
+}
+
+=head2 __args_are_valid
+
+Checks if the passed arguments and values are valid for updating a match.
+
+=cut
+
+sub __args_are_valid
+{
+	my $args = shift;
+	my $results = $args;
+	if(ref $args eq "HASH") { $results = $args->{scores_csv}; }
+
+	# Check the arrayref contains the correct values:
+	for my $result(@{$results})
+	{
+		if($result !~ /^\d*-\d*$/)
+		{
+			print STDERR "Error: Results must be given in the format \"x-y\",",
+				" where x and y are integers.\n";
+			return undef;
+		}
+	}
+
+	# Check the remaining arguments are also integers:
+	if(ref $args eq "HASH")
+	{
+		for my $arg(qw/player1_votes player2_votes/)
+		{
+			next unless(defined $args->{$arg});
+			if($args->{$arg} !~ /^\d*$/)
+			{
+				print STDERR "Error: Argument '", $arg, "' must be an integer",
+					".\n";
+				return undef;
+			}
+		}
+
+		# Finally, check if there are any unrecognised arguments, but just ignore
+		# them instead of erroring out:
+		my $is_valid = 0;
+		for my $arg(keys %{$args})
+		{
+			for my $valid_arg(qw/player1_votes player2_votes scores_csv/)
+			{
+				if($arg eq $valid_arg)
+				{
+					$is_valid = 1;
+					last;
+				}
+			}
+			print STDERR "Warning: Ignoring unknown argument '", $arg, "'\n"
+				unless($is_valid);
+			$is_valid = 0;
+		}
+	}
+	return 1;
 }
 
 =head1 AUTHOR
