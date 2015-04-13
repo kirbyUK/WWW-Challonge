@@ -24,8 +24,6 @@ our $VERSION = '0.01';
 Access the Challonge API within Perl. Contains all the functions within the API,
 as documented L<here|http:://api.challonge.com/v1>.
 
-Perhaps a little code snippet.
-
     use WWW::Challonge;
 
     my $c = WWW::Challonge->new($api_key)
