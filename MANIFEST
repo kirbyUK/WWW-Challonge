@@ -1,12 +1,17 @@
 Changes
+ignore.txt
 lib/WWW/Challonge.pm
-lib/WWW/Challonge/Tournament.pm
-lib/WWW/Challonge/Participant.pm
 lib/WWW/Challonge/Match.pm
+lib/WWW/Challonge/Participant.pm
+lib/WWW/Challonge/Tournament.pm
 Makefile.PL
 MANIFEST			This list of files
+MANIFEST.SKIP
 README
+README.md
 t/00-load.t
+t/challonge.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
+xt/boilerplate.t
