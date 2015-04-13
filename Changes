@@ -3,7 +3,6 @@ Revision history for WWW-Challonge
 0.20	date
 		* Various POD fixes
 		* Added WWW::Challonge::Match::Attachment module
-		* Added WWW::Challonge::Match::index
 
 0.11	2015-04-13
 		* Updated Makefile, status is 'unstable', added repository.

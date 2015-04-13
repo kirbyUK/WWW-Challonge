@@ -314,6 +314,50 @@ sub index
 	return $attachments;
 }
 
+=head2 show
+
+Returns a single C<WWW::Challonge::Match::Attachment> object for the
+attachment with the given ID:
+
+	my $ma = $m->show(124858);
+
+=cut
+
+sub show
+{
+	my $self = shift;
+	my $atth = shift;
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{match}->{tournament_id};
+	my $id = $self->{match}->{id};
+
+	# Get the match attachments:
+	$client->GET(
+		"/tournaments/$url/matches/$id/attachments/$atth.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If it was successful, create the object and return it:
+	my $attachment = WWW::Challonge::Match::Attachment->new(
+		from_json($client->responseContent),
+		$key,
+		$client
+	);
+	return $attachment;
+}
+
 =head2 __args_are_valid
 
 Checks if the passed arguments and values are valid for updating a match.
@@ -382,9 +426,6 @@ Please report any bugs or feature requests to C<bug-www-challonge at rt.cpan.org
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WWW-Challonge::Match>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-
-
-
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
@@ -430,6 +471,8 @@ L<http://search.cpan.org/dist/WWW-Challonge::Match/>
 
 =head1 ACKNOWLEDGEMENTS
 
+Everyone on the L<Challonge|http://challonge.com> team for making such a great
+service.
 
 =head1 LICENSE AND COPYRIGHT
 
