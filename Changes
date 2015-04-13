@@ -1,8 +1,10 @@
 Revision history for WWW-Challonge
 
+0.11	2015-04-13
+		* Updated Makefile, status is 'unstable', added repository.
+
 0.10	2015-04-13
 		* Updated POD
-		* Added Git repository to MYMETA.json
 		* Added WWW::Challonge::Match::attributes
 
 0.01    2015-04-12
