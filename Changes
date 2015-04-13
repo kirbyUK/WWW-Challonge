@@ -1,5 +1,10 @@
 Revision history for WWW-Challonge
 
-0.01    Date/time
+0.10	2015-04-13
+		* Updated POD
+		* Added Git repository to MYMETA.json
+		* Added WWW::Challonge::Match::attributes
+
+0.01    2015-04-12
         First version, released on an unsuspecting world.
 

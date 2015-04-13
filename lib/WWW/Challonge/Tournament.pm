@@ -16,11 +16,11 @@ WWW::Challonge::Tournament - A class representing a single Challonge tournament.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.10
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.10';
 
 =head1 SUBROUTINES/METHODS
 
