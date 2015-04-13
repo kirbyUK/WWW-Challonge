@@ -175,6 +175,101 @@ sub update
 	}
 }
 
+=head2 attributes
+
+Returns a hashref of all the attributes of the match. Contains the following
+fields.
+
+=over 4
+
+=item attachment_count
+
+=item created_at
+
+=item group_id
+
+=item has_attachment
+
+=item id
+
+=item identifier
+
+=item location
+
+=item loser_id
+
+=item player1_id
+
+=item player1_is_prereq_match_loser
+
+=item player1_prereq_match_id
+
+=item player1_votes
+
+=item player2_id
+
+=item player2_is_prereq_match_loser
+
+=item player2_prereq_match_id
+
+=item player2_votes
+
+=item prerequisite_match_ids_csv
+
+=item round
+
+=item scheduled_time
+
+=item scores_csv
+
+=item started_at
+
+=item state
+
+=item tournament_id
+
+=item underway_at
+
+=item updated_at
+
+=item winner_id
+
+=back
+
+	my $attr = $m->attributes;
+	print $attr->{identifier}, "\n";
+
+=cut
+
+sub attributes
+{
+	my $self = shift;
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{match}->{tournament_id};
+	my $id = $self->{match}->{id};
+
+	# Get the most recent version:
+	$client->GET("/tournaments/$url/matches/$id.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, save it and then return it:
+	$self->{match} = from_json($client->responseContent)->{match};
+	return $self->{match};
+}
+
 =head2 __args_are_valid
 
 Checks if the passed arguments and values are valid for updating a match.
