@@ -232,10 +232,7 @@ sub randomize
 =head2 attributes
 
 Gets all the attributes of the participant in hashref and returns it. Contains
-the following fields:
-
-	my $attr = $p->attributes;
-	print $attr->{name}, "\n";
+the following fields.
 
 =over 4
 
@@ -296,6 +293,9 @@ the following fields:
 =item username
 
 =back
+
+	my $attr = $p->attributes;
+	print $attr->{name}, "\n";
 
 =cut
 
