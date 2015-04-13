@@ -9,7 +9,7 @@ sub __args_are_valid;
 
 =head1 NAME
 
-WWW::Challonge::Participant - A class representing a single participant within
+WWW::Challonge::Match - A class representing a single match within
 a Challonge tournament.
 
 =head1 VERSION
