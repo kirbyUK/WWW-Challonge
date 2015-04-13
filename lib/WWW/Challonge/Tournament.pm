@@ -1046,19 +1046,19 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker (report bugs here)
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-Challonge::Tournament>
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-Challonge>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/WWW-Challonge::Tournament>
+L<http://annocpan.org/dist/WWW-Challonge>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/WWW-Challonge::Tournament>
+L<http://cpanratings.perl.org/d/WWW-Challonge>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/WWW-Challonge::Tournament/>
+L<http://search.cpan.org/dist/WWW-Challonge>
 
 =back
 
@@ -1071,6 +1071,8 @@ L<http://search.cpan.org/dist/WWW-Challonge::Tournament/>
 =item L<WWW::Challonge::Participant>
 
 =item L<WWW::Challonge::Match>
+
+=item L<WWW::Challonge::Match::Attachment>
 
 =back
 
@@ -1118,7 +1120,6 @@ YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
 CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
 CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 
 =cut
 

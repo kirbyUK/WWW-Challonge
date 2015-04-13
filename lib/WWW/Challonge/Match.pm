@@ -3,6 +3,7 @@ package WWW::Challonge::Match;
 use 5.006;
 use strict;
 use warnings;
+use WWW::Challonge::Match::Attachment;
 use JSON qw/to_json from_json/;
 
 sub __args_are_valid;
@@ -27,7 +28,7 @@ our $VERSION = '0.11';
 Takes a hashref representing the match, the API key and the REST client and
 turns it into an object. This is mostly used by the module itself.
 
-	my $p = WWW::Challonge::Match->new($match, $key, $client);
+	my $m = WWW::Challonge::Match->new($match, $key, $client);
 
 =cut
 
@@ -270,6 +271,49 @@ sub attributes
 	return $self->{match};
 }
 
+=head2 index
+
+Returns an arrayref of C<WWW::Challonge::Match::Attachment> objects for every
+attachment the match has.
+
+	my $attachments = $m->index;
+
+=cut
+
+sub index
+{
+	my $self = shift;
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{match}->{tournament_id};
+	my $id = $self->{match}->{id};
+
+	# Get the match attachments:
+	$client->GET("/tournaments/$url/matches/$id/attachments.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If it was successful, create the objects and return them:
+	my $attachments = [];
+	for my $att(@{from_json($client->responseContent)})
+	{
+		push @{$attachments},
+			WWW::Challonge::Match::Attachment->new($att, $key, $client);
+	}
+	return $attachments;
+}
+
 =head2 __args_are_valid
 
 Checks if the passed arguments and values are valid for updating a match.
@@ -380,8 +424,9 @@ L<http://search.cpan.org/dist/WWW-Challonge::Match/>
 
 =item L<WWW::Challonge::Participant>
 
-=back
+=item L<WWW::Challonge::Match::Attachment>
 
+=back
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -425,7 +470,6 @@ YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
 CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
 CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 
 =cut
 

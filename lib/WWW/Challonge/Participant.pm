@@ -430,15 +430,11 @@ Please report any bugs or feature requests to C<bug-www-challonge at rt.cpan.org
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=WWW-Challonge::Participant>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-
-
-
 =head1 SUPPORT
 
 You can find documentation for this module with the perldoc command.
 
     perldoc WWW::Challonge::Participant
-
 
 You can also look for information at:
 
@@ -446,19 +442,19 @@ You can also look for information at:
 
 =item * RT: CPAN's request tracker (report bugs here)
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-Challonge::Participant>
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=WWW-Challonge>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
-L<http://annocpan.org/dist/WWW-Challonge::Participant>
+L<http://annocpan.org/dist/WWW-Challonge>
 
 =item * CPAN Ratings
 
-L<http://cpanratings.perl.org/d/WWW-Challonge::Participant>
+L<http://cpanratings.perl.org/d/WWW-Challonge>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/WWW-Challonge::Participant/>
+L<http://search.cpan.org/dist/WWW-Challonge>
 
 =back
 
@@ -472,11 +468,14 @@ L<http://search.cpan.org/dist/WWW-Challonge::Participant/>
 
 =item L<WWW::Challonge::Match>
 
-=back
+=item L<WWW::Challonge::Match::Attachment>
 
+=back
 
 =head1 ACKNOWLEDGEMENTS
 
+Everyone on the L<Challonge|http://challonge.com> team for making such a great
+service.
 
 =head1 LICENSE AND COPYRIGHT
 
@@ -517,7 +516,6 @@ YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
 CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
 CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 
 =cut
 

@@ -521,6 +521,8 @@ L<http://search.cpan.org/dist/WWW-Challonge/>
 
 =item L<WWW::Challonge::Match>
 
+=item L<WWW::Challonge::Match::Attachment>
+
 =back
 
 =head1 ACKNOWLEDGEMENTS
