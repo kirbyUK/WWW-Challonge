@@ -18,8 +18,8 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        #'ABC'              => 1.6,
-        #'Foo::Bar::Module' => 5.0401,
+		"REST::Client"		=> 271,
+		"JSON"				=> 2.61,
     },
 	META_MERGE => {
 		"meta-spec" => { version => 2 },
