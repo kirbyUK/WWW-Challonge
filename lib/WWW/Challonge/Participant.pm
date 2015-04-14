@@ -356,6 +356,13 @@ sub __args_are_valid
 {
 	my $args = shift;
 
+	# Check it is a hashref:
+	unless(ref $args eq "HASH")
+	{
+		print STDERR "Error: Argument must be a hashref.\n";
+		return undef;
+	}
+
 	# The possible parameters, grouped together by the kind of input they take.
 	my %valid_args = (
 		string => [
