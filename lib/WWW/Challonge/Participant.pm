@@ -341,7 +341,7 @@ that has been successfully destroyed.
 
 sub __is_kill
 {
-	print STDERR "Error: Client has been destroyed\n";
+	print STDERR "Error: Participant has been destroyed\n";
 	return undef;
 }
 
