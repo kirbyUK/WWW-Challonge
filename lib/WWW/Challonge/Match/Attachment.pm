@@ -3,9 +3,11 @@ package WWW::Challonge::Match::Attachment;
 use 5.006;
 use strict;
 use warnings;
+use MIME::Base64 qw/encode_base64url/;
 use JSON qw/to_json from_json/;
 
 sub __args_are_valid;
+sub __is_kill;
 
 =head1 NAME
 
@@ -24,11 +26,12 @@ our $VERSION = '0.11';
 
 =head2 new
 
-Takes a hashref representing the match attachment, the API key and the REST
-client and turns it into an object. This is mostly used by the module itself.
-To see how to create a match attachment, see L<WWW::Challonge::Match/create>.
+Takes a hashref representing the match attachment, the tournament id, the API
+key and the REST client and turns it into an object. This is mostly used by the
+module itself. To see how to create a match attachment, see
+L<WWW::Challonge::Match/create>.
 
-	my $ma = WWW::Challonge::Match::Attachment->new($match, $key, $client);
+	my $ma = WWW::Challonge::Match::Attachment->new($match, $id, $key, $client);
 
 =cut
 
@@ -36,6 +39,7 @@ sub new
 {
 	my $class = shift;
 	my $attachment = shift;
+	my $tournament = shift;
 	my $key = shift;
 	my $client = shift;
 
@@ -43,7 +47,9 @@ sub new
 	{
 		client => $client,
 		attachment => $attachment->{match_attachment},
+		tournament => $tournament,
 		key => $key,
+		alive => 1,
 	};
 	bless $ma, $class;
 }
@@ -103,7 +109,7 @@ following fields.
 =back
 
 	my $attr = $m->attributes;
-	print $attr->{}, "\n";
+	print $attr->{description}, "\n";
 
 =cut
 
@@ -111,11 +117,35 @@ sub attributes
 {
 	my $self = shift;
 
+	# Do not operate on a dead attachment:
+	return __is_kill unless($self->{alive});
+
 	# Get the key, REST client, tournament url and id:
 	my $key = $self->{key};
 	my $client = $self->{client};
-	my $url = $self->{match}->{tournament_id};
-	my $id = $self->{match}->{id};
+	my $url = $self->{tournament};
+	my $match_id = $self->{attachment}->{match_id};
+	my $id = $self->{attachment}->{id};
+
+	# Get the most recent version:
+	$client->GET(
+		"/tournaments/$url/matches/$match_id/attachments/$id.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, save the most recent and return it:
+	$client->{attachment} =
+		from_json($client->responseContent)->{match_attachment};
+	return $client->{attachment};
 }
 
 =head2 __args_are_valid
@@ -128,6 +158,19 @@ attachment.
 sub __args_are_valid
 {
 	my $args = shift;
+}
+
+=head2 __is_kill
+
+Checks the attachment has not been deleted from Challonge with
+L<WWW::Challonge::Match::Attachment/destroy>.
+
+=cut
+
+sub __is_kill
+{
+	print STDERR "Error: Tournament has been destroyed\n";
+	return undef;
 }
 
 =head1 AUTHOR
