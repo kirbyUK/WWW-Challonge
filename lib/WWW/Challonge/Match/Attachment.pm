@@ -75,6 +75,50 @@ sub update
 	my $id = $self->{match}->{id};
 }
 
+=head2 destroy
+
+Deletes the match attachment from the attached match.
+
+	$ma->destroy;
+
+	# $ma still contains the attachment, but any future operations will fail:
+	$ma->update({ url => "https://example.com" }); # ERROR!
+
+=cut
+
+sub destroy
+{
+	my $self = shift;
+
+	# Do not operate on a dead attachment:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{tournament};
+	my $match_id = $self->{attachment}->{match_id};
+	my $id = $self->{attachment}->{id};
+
+	# Make the DELETE call:
+	$client->DELETE(
+		"/tournaments/$url/matches/$match_id/attachments/$id.json?api_key=$key");
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, mark the oject as dead:
+	$self->{alive} = 0;
+}
+
 =head2 attributes
 
 Returns a hashref of all the attributes of the match attachment. Contains the
