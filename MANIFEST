@@ -2,6 +2,7 @@ Changes
 ignore.txt
 lib/WWW/Challonge.pm
 lib/WWW/Challonge/Match.pm
+lib/WWW/Challonge/Match/Attachment.pm
 lib/WWW/Challonge/Participant.pm
 lib/WWW/Challonge/Tournament.pm
 Makefile.PL
