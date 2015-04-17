@@ -309,7 +309,7 @@ sub index
 	for my $att(@{from_json($client->responseContent)})
 	{
 		push @{$attachments},
-			WWW::Challonge::Match::Attachment->new($att, $key, $client);
+			WWW::Challonge::Match::Attachment->new($att, $url, $key, $client);
 	}
 	return $attachments;
 }
@@ -352,10 +352,98 @@ sub show
 	# If it was successful, create the object and return it:
 	my $attachment = WWW::Challonge::Match::Attachment->new(
 		from_json($client->responseContent),
+		$url,
 		$key,
 		$client
 	);
 	return $attachment;
+}
+
+=head2 create
+
+Creates a new match attachment and returns the resulting
+C<WWW::Challonge::Match::Attachment> object. Takes the following arguments, at
+least one of them is required. The tournament's "accept_attachments" attribute
+must be true for this to succeed.
+
+=over 4
+
+=item asset
+
+Currently unsupported. A file upload (250KB). If provided, the 'url' parameter
+will be ignored.
+
+=item url
+
+A web URL. Must include http://, https:// or ftp://.
+
+=item description
+
+Text to the describte the file or URL, or it can simply be standalone text.
+
+=back
+
+	# A simple URL:
+	my $ma = $m->create({
+		url => www.example.com/image.png",
+		description => "An example URL",
+	});
+
+	# File uploads require a filename:
+	my $ma = $m->create({
+		asset => "example.png",
+		description => "An example file",
+	});
+
+=cut
+
+sub create
+{
+	my $self = shift;
+	my $args = shift;
+
+	# Get the key, REST client, tournament url and id:
+	my $key = $self->{key};
+	my $client = $self->{client};
+	my $url = $self->{match}->{tournament_id};
+	my $id = $self->{match}->{id};
+
+	# Check the arguments are valid:
+	return undef
+		unless(WWW::Challonge::Match::Attachment::__args_are_valid($args));
+
+#	if(defined $args->{asset})
+#	{
+#		$args->{asset} = [ $args->{asset} ];
+#	}
+
+	# Make the POST call:
+	my $params = { api_key => $key, match_attachment => $args };
+#	$client->POST("/tournaments/$url/matches/$id/attachments.json",
+#		$params, { "Content-Type" => 'multipart/form-data' });
+	$client->POST("/tournaments/$url/matches/$id/attachments.json",
+		to_json($params), { "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		print $client->responseCode, "\n";
+		print $client->responseContent, "\n";
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, make an object and return it:
+	return WWW::Challonge::Match::Attachment->new(
+		from_json($client->responseContent),
+		$url,
+		$key,
+		$client
+	);
 }
 
 =head2 __args_are_valid

@@ -202,6 +202,35 @@ attachment.
 sub __args_are_valid
 {
 	my $args = shift;
+
+	for my $arg(keys %{$args})
+	{
+		if($arg eq "asset")
+		{
+#			if(! -f $args->{$arg})
+#			{
+#				print STDERR "Error: No such file: '", $args->{$arg}, "'.\n";
+				print STDERR "Error: Asset uploading is currently unsupported.\n";
+				return undef;
+#			}
+		}
+		elsif($arg eq "url")
+		{
+			if($args->{$arg} !~ m{^(?:https?|ftp)://})
+			{
+				print STDERR "Error: URL must start with 'http://', ",
+					"'https://' or 'ftp://'.\n";
+				return undef;
+			}
+		}
+		elsif($arg ne "description")
+		{
+			print STDERR "Warning: Ignoring unrecognised argument '",
+				$args->{$arg}, "'\n";
+		}
+	}
+
+	return 1;
 }
 
 =head2 __is_kill
