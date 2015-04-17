@@ -59,7 +59,7 @@ sub new
 Updates the attributes of the match attachment. Takes the same arguments as
 L<WWW::Challonge::Match/create>.
 
-	$ma->update({ url => "www.example.com/example2.png" });
+	$ma->update({ url => "https://www.example.com/example2.png" });
 
 =cut
 
@@ -68,11 +68,41 @@ sub update
 	my $self = shift;
 	my $args = shift;
 
-	# Get the key, REST client and match id:
+	# Do not operate on a dead attachment:
+	return __is_kill unless($self->{alive});
+
+	# Get the key, REST client, tournament url and id:
 	my $key = $self->{key};
 	my $client = $self->{client};
-	my $url = $self->{match}->{tournament_id};
-	my $id = $self->{match}->{id};
+	my $url = $self->{tournament};
+	my $match_id = $self->{attachment}->{match_id};
+	my $id = $self->{attachment}->{id};
+
+	# Check the arguments are valid:
+	return undef
+		unless(WWW::Challonge::Match::Attachment::__args_are_valid($args));
+
+	# Make the PUT call:
+	my $params = { api_key => $key, match_attachment => $args };
+	$client->PUT("/tournaments/$url/matches/$match_id/attachments/$id.json",
+		to_json($params), { "Content-Type" => 'application/json' });
+
+	# Check if it was successful:
+	if($client->responseCode > 300)
+	{
+		print $client->responseCode, "\n";
+		print $client->responseContent, "\n";
+		my $errors = from_json($client->responseContent)->{errors};
+		for my $error(@{$errors})
+		{
+			print STDERR "Error: $error\n";
+		}
+		return undef;
+	}
+
+	# If so, set the object's attributes to the updated version:
+	$self->{attachment} =
+		from_json($client->responseContent)->{match_attachment};
 }
 
 =head2 destroy
