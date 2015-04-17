@@ -1,8 +1,11 @@
 Revision history for WWW-Challonge
 
-0.20	date
+0.20	2015-04-18
 		* Various POD fixes
-		* Added WWW::Challonge::Match::Attachment module
+		* Added WWW::Challonge::Match::Attachment module. Contains all
+		functionality in the Challonge API except the ability to uplaod files,
+		which is being worked on.
+		* Status is 'testing' for now, as most of the API has been implemented.
 
 0.11	2015-04-13
 		* Updated Makefile, status is 'unstable', added repository.
