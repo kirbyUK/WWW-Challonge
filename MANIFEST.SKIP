@@ -57,6 +57,7 @@
 # Random development files
 test.pl
 bulk_add
+xt/key
 
 # The build file:
 WWW-Challonge

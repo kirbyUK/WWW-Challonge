@@ -16,3 +16,4 @@ pod2htm*.tmp
 pm_to_blib
 WWW-Challonge-*
 WWW-Challonge-*.tar.gz
+xt/key
