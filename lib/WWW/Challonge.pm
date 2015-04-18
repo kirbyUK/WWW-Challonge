@@ -4,7 +4,7 @@ use REST::Client;
 use Carp qw/carp/;
 use JSON qw/to_json from_json/;
 
-use 5.006;
+use 5.010;
 use strict;
 use warnings;
 

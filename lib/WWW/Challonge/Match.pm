@@ -1,6 +1,6 @@
 package WWW::Challonge::Match;
 
-use 5.006;
+use 5.010;
 use strict;
 use warnings;
 use WWW::Challonge::Match::Attachment;
