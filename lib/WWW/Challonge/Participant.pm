@@ -20,7 +20,7 @@ Version 0.20
 
 =cut
 
-our $VERSION = '0.11';
+our $VERSION = '0.20';
 
 =head1 SUBROUTINES/METHODS
 
