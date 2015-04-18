@@ -20,6 +20,7 @@ WriteMakefile(
     PREREQ_PM => {
 		"REST::Client"		=> 271,
 		"JSON"				=> 2.61,
+		"Carp"				=> 1.04,
     },
 	META_MERGE => {
 		"meta-spec" => { version => 2 },

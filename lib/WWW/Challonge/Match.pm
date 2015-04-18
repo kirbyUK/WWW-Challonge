@@ -4,6 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 use WWW::Challonge::Match::Attachment;
+use Carp qw/carp/;
 use JSON qw/to_json from_json/;
 
 sub __args_are_valid;
@@ -104,8 +105,7 @@ sub update
 		if((ref $args eq "HASH") && ((! defined $args->{scores_csv}) ||
 			(ref $args->{scores_csv} ne "ARRAY")))
 		{
-			print STDERR "Error: Required argument 'scores_csv' as an array ",
-				"reference of scores.\n";
+			carp "Required argument 'scores_csv' as an array reference";
 			return undef;
 		}
 
@@ -160,7 +160,7 @@ sub update
 			my $errors = from_json($client->responseContent)->{errors};
 			for my $error(@{$errors})
 			{
-				print STDERR "Error: $error\n";
+				carp "$error" . " (" . $client->responseCode . ")";
 			}
 			return undef;
 		}
@@ -171,7 +171,7 @@ sub update
 	else
 	{
 		# Otherwise, give an error and exit:
-		print STDERR "Error: Expected an arrayref or hashref.\n";
+		carp "Expected an arrayref or hashref";
 		return undef;
 	}
 }
@@ -261,7 +261,7 @@ sub attributes
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -299,7 +299,7 @@ sub index
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -344,7 +344,7 @@ sub show
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -432,7 +432,7 @@ sub create
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -463,8 +463,8 @@ sub __args_are_valid
 	{
 		if($result !~ /^\d*-\d*$/)
 		{
-			print STDERR "Error: Results must be given in the format \"x-y\",",
-				" where x and y are integers.\n";
+			carp "Results must be given in the format \"x-y\", where x and y ".
+			"are integers";
 			return undef;
 		}
 	}
@@ -477,8 +477,7 @@ sub __args_are_valid
 			next unless(defined $args->{$arg});
 			if($args->{$arg} !~ /^\d*$/)
 			{
-				print STDERR "Error: Argument '", $arg, "' must be an integer",
-					".\n";
+				carp "Argument '", $arg, "' must be an integer";
 				return undef;
 			}
 		}
@@ -496,8 +495,7 @@ sub __args_are_valid
 					last;
 				}
 			}
-			print STDERR "Warning: Ignoring unknown argument '", $arg, "'\n"
-				unless($is_valid);
+			carp "Ignoring unknown argument '$arg'" unless($is_valid);
 			$is_valid = 0;
 		}
 	}

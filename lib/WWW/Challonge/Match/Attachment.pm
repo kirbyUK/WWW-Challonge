@@ -3,7 +3,7 @@ package WWW::Challonge::Match::Attachment;
 use 5.006;
 use strict;
 use warnings;
-use MIME::Base64 qw/encode_base64url/;
+use Carp qw/carp/;
 use JSON qw/to_json from_json/;
 
 sub __args_are_valid;
@@ -95,7 +95,7 @@ sub update
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -140,7 +140,7 @@ sub destroy
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -211,7 +211,7 @@ sub attributes
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -239,8 +239,8 @@ sub __args_are_valid
 		{
 #			if(! -f $args->{$arg})
 #			{
-#				print STDERR "Error: No such file: '", $args->{$arg}, "'.\n";
-				print STDERR "Error: Asset uploading is currently unsupported.\n";
+#				carp "No such file: '" . $args->{$arg} . "'";
+				carp "Asset uploading is currently unsupported";
 				return undef;
 #			}
 		}
@@ -248,15 +248,13 @@ sub __args_are_valid
 		{
 			if($args->{$arg} !~ m{^(?:https?|ftp)://})
 			{
-				print STDERR "Error: URL must start with 'http://', ",
-					"'https://' or 'ftp://'.\n";
+				carp "URL must start with 'http://', 'https://' or 'ftp://'";
 				return undef;
 			}
 		}
 		elsif($arg ne "description")
 		{
-			print STDERR "Warning: Ignoring unrecognised argument '",
-				$args->{$arg}, "'\n";
+			carp "Ignoring unrecognised argument '" . $args->{$arg} . "'";
 		}
 	}
 
@@ -272,7 +270,7 @@ L<WWW::Challonge::Match::Attachment/destroy>.
 
 sub __is_kill
 {
-	print STDERR "Error: Tournament has been destroyed\n";
+	carp "Attachment has been destroyed";
 	return undef;
 }
 

@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use WWW::Challonge::Participant;
 use WWW::Challonge::Match;
+use Carp qw/carp/;
 use JSON qw/to_json from_json/;
 
 sub __is_kill;
@@ -93,7 +94,7 @@ sub update
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -135,7 +136,7 @@ sub destroy
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -194,7 +195,7 @@ sub process_check_ins
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -250,7 +251,7 @@ sub abort_check_in
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -294,7 +295,7 @@ sub start
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -337,7 +338,7 @@ sub finalize
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -380,7 +381,7 @@ sub reset
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -550,7 +551,7 @@ sub attributes
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -593,7 +594,7 @@ sub participant_index
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -639,7 +640,7 @@ sub participant_show
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -712,8 +713,8 @@ sub participant_create
 	unless((defined $args->{name}) || (defined $args->{challonge_username}) ||
 		defined $args->{email})
 	{
-		print STDERR "Error: Name, email or Challonge username are required to
-			create a new participant.\n";
+		carp "Name, email or Challonge username are required to create a new ".
+			"participant.\n";
 		return undef;
 	}
 
@@ -733,7 +734,7 @@ sub participant_create
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -778,7 +779,7 @@ sub match_index
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -824,7 +825,7 @@ sub match_show
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -845,7 +846,7 @@ that has been successfully destroyed.
 
 sub __is_kill
 {
-	print STDERR "Error: Tournament has been destroyed\n";
+	carp "Tournament has been destroyed";
 	return undef;
 }
 
@@ -863,7 +864,7 @@ sub __args_are_valid
 	# Check it is a hashref:
 	unless(ref $args eq "HASH")
 	{
-		print STDERR "Error: Argument must be a hashref.\n";
+		carp "Argument must be a hashref";
 		return undef;
 	}
 
@@ -920,8 +921,7 @@ sub __args_are_valid
 		{
 			if(length $args->{$arg} > 60)
 			{
-				print STDERR "Error: Name '", $args->{$arg}, " is longer than ",
-					"60 characters";
+				carp "Name '" . $args->{$arg} . " is longer than 60 characters";
 				return undef;
 			}
 		}
@@ -930,8 +930,8 @@ sub __args_are_valid
 			if($args->{$arg} !~ /^((single|double) elimination)|(round robin)|
 				(swiss)$/i)
 			{
-				print STDERR "Error: Value '", $args->{$arg}, "' is invalid ",
-					"for argument '", $arg, "'\n";
+				carp "Value '" . $args->{$arg} . "' is invalid for argument '".
+					$arg . "'";
 				return undef;
 			}
 		}
@@ -939,8 +939,7 @@ sub __args_are_valid
 		{
 			if($args->{$arg} !~ /^[a-zA-Z0-9_]*$/)
 			{
-				print STDERR "Error: Value '", $args->{$arg}, "' is not a ",
-					"valid URL.\n";
+				carp "Value '" . $args->{$arg} . "' is not a valid URL";
 				return undef;
 			}
 		}
@@ -949,8 +948,8 @@ sub __args_are_valid
 			if($args->{$arg} !~ /^((match|game) wins)|
 				(points (scored|difference))|custom/i)
 			{
-				print STDERR "Error: Value '", $args->{$arg}, "' is invalid ",
-					"for argument '", $arg, "'\n";
+				carp "Value '" . $args->{$arg} . "' is invalid for argument '".
+					$arg . "'";
 				return undef;
 			}
 		}
@@ -961,8 +960,8 @@ sub __args_are_valid
 		# Make sure the argument is an integer:
 		if($args->{$arg} !~ /^\d*$/)
 		{
-			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
-				"integer for argument '", $arg, "'\n";
+			carp "Value '" . $args->{$arg} . "' is not a valid integer for " .
+				"argument '" . $arg . "'";
 			return undef;
 		}
 	}
@@ -972,8 +971,8 @@ sub __args_are_valid
 		# Make sure the argument is an integer or decimal:
 		if($args->{$arg} !~ /^\d*\.?\d*$/)
 		{
-			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
-				"decimal for argument '", $arg, "'\n";
+			carp "Value '" . $args->{$arg} . "' is not a valid decimal for " .
+				"argument '" . $arg . "'";
 			return undef;
 		}
 		else
@@ -987,8 +986,8 @@ sub __args_are_valid
 		# Make sure the argument is true or false:
 		if($args->{$arg} !~ /^(true|false)$/i)
 		{
-			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
-				"for argument '", $arg, "'. It should be 'true' or 'false'.\n";
+			carp "Value '", $args->{$arg}, "' is not valid for argument '" .
+				$arg . "'. It should be 'true' or 'false'";
 			return undef;
 		}
 	}
@@ -998,8 +997,8 @@ sub __args_are_valid
 		# Make sure the argument is a valid datetime:
 #		if($args->{$arg} !~ /^$/)
 #		{
-#			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
-#				"for argument '", $arg, "'. It should be 'true' or 'false'.\n";
+#			carp "Value '", $args->{$arg}, "' is not a valid datetime for " .
+#				"argument '" . $arg . "'";
 #			return undef;
 #		}
 	}
@@ -1024,8 +1023,7 @@ sub __args_are_valid
 				last;
 			}
 		}
-		print STDERR "Warning: Ignoring unknown argument '", $arg, "'\n"
-			unless($is_valid);
+		carp "Ignoring unknown argument '" . $arg . "'" unless($is_valid);
 		$is_valid = 0;
 	}
 	return 1;

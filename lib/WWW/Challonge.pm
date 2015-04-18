@@ -1,6 +1,7 @@
 package WWW::Challonge;
 use WWW::Challonge::Tournament;
 use REST::Client;
+use Carp qw/carp/;
 use JSON qw/to_json from_json/;
 
 use 5.006;
@@ -56,7 +57,7 @@ sub new
 	if($client->responseCode() eq '401')
 	{
 		# If it isn't, warn the user and exit:
-		print STDERR "Error: Challonge API key is invalid.\n";
+		carp "Challonge API key is invalid.";
 		return undef;
 	}
 
@@ -157,37 +158,37 @@ sub index
 		{
 			if($options->{$option} !~ /^all|pending|in_progress|ended$/)
 			{
-				print STDERR "Error: Argument '" . $options->{option} .
-					"' for option '$option' is invalid.";
+				carp "Argument '" . $options->{option} .
+					"' for option '$option' is invalid";
 			}
 		}
 		elsif($option =~ /^type$/)
 		{
 			if($options->{$option} !~ /^(single|double)_elimination|round_robin|swiss$/)
 			{
-				print STDERR "Error: Argument '" . $options->{option} .
-					"' for option '$option' is invalid.";
+				carp "Argument '" . $options->{option} .
+					"' for option '$option' is invalid";
 			}
 		}
 		elsif($option =~ /^created_(before|after)$/)
 		{
 			if($options->{$option} !~ /^\d{4}-\d{2}-\d{2}$/)
 			{
-				print STDERR "Error: Argument '" . $options->{option} .
-					"' for option '$option' is invalid.";
+				carp "Argument '" . $options->{option} .
+					"' for option '$option' is invalid";
 			}
 		}
 		elsif($option =~ /^subdomain$/)
 		{
 			if($options->{$option} !~ /^[a-zA-Z0-9_]*$/)
 			{
-				print STDERR "Error: Argument '" . $options->{option} .
-					"' for option '$option' is invalid.";
+				carp "Argument '" . $options->{option} .
+					"' for option '$option' is invalid";
 			}
 		}
 		else
 		{
-			print STDERR "Error: Option '$option' is invalid.";
+			carp "Unknown option '$option'";
 			return undef;
 		}
 
@@ -237,7 +238,7 @@ sub show
 	# Check for any errors:
 	if($client->responseCode eq '404')
 	{
-		print STDERR "Error: Tournament '$url' not found.\n";
+		carp "Tournament '$url' not found\n";
 		return undef;
 	}
 
@@ -441,8 +442,7 @@ sub create
 	# Fail if name and URL aren't given:
 	if((! defined $args->{name}) && (! defined $args->{url}))
 	{
-		print STDERR "Error: Name and URL are required to create a ",
-			"tournament.\n";
+		carp "Name and URL are required to create a tournament";
 		return undef;
 	}
 
@@ -462,7 +462,7 @@ sub create
 		my $error = from_json($client->responseContent)->{errors}->[0];
 		if($error =~ /taken/)
 		{
-			print STDERR "Error: URL '", $args->{url}, "' is already taken\n";
+			carp "URL '", $args->{url}, "' is already taken";
 		}
 		return undef;
 	}

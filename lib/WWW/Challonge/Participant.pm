@@ -3,6 +3,7 @@ package WWW::Challonge::Participant;
 use 5.006;
 use strict;
 use warnings;
+use Carp qw/carp/;
 use JSON qw/to_json from_json/;
 
 sub __is_kill;
@@ -94,7 +95,7 @@ sub update
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -137,7 +138,7 @@ sub check_in
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -178,7 +179,7 @@ sub destroy
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -221,7 +222,7 @@ sub randomize
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -321,7 +322,7 @@ sub attributes
 		my $errors = from_json($client->responseContent)->{errors};
 		for my $error(@{$errors})
 		{
-			print STDERR "Error: $error\n";
+			carp "$error" . " (" . $client->responseCode . ")";
 		}
 		return undef;
 	}
@@ -341,7 +342,7 @@ that has been successfully destroyed.
 
 sub __is_kill
 {
-	print STDERR "Error: Participant has been destroyed\n";
+	carp "Participant has been destroyed";
 	return undef;
 }
 
@@ -359,7 +360,7 @@ sub __args_are_valid
 	# Check it is a hashref:
 	unless(ref $args eq "HASH")
 	{
-		print STDERR "Error: Argument must be a hashref.\n";
+		carp "Argument must be a hashref";
 		return undef;
 	}
 
@@ -386,8 +387,7 @@ sub __args_are_valid
 		{
 			if(length $args->{$arg} > 255)
 			{
-				print STDERR "Error: '$arg' input is too long (max. 255 ", 
-					"characters).\n";
+				carp "'$arg' input is too long (max. 255 characters)";
 			}
 		}
 	}
@@ -397,8 +397,8 @@ sub __args_are_valid
 		# Make sure the argument is an integer:
 		if($args->{$arg} !~ /^\d*$/)
 		{
-			print STDERR "Error: Value '", $args->{$arg}, "' is not a valid ",
-				"integer for argument '", $arg, "'\n";
+			carp "Value '" . $args->{$arg} . "' is not a valid integer for " .
+				"argument '" . $arg . "'";
 			return undef;
 		}
 	}
@@ -420,8 +420,7 @@ sub __args_are_valid
 				last;
 			}
 		}
-		print STDERR "Warning: Ignoring unknown argument '", $arg, "'\n"
-			unless($is_valid);
+		carp "Ignoring unknown argument '" . $arg . "'" unless($is_valid);
 		$is_valid = 0;
 	}
 	return 1;
