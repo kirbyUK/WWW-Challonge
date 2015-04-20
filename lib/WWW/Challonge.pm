@@ -1,7 +1,7 @@
 package WWW::Challonge;
 use WWW::Challonge::Tournament;
 use REST::Client;
-use Carp qw/carp/;
+use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
 
 use 5.010;
@@ -34,34 +34,59 @@ as documented L<here|http:://api.challonge.com/v1>.
 
 =head2 new
 
-Creates a new C<WWW::Challonge> object. Takes in an API key, which is required:
+Creates a new C<WWW::Challonge> object. Takes in an API key, which is required,
+and optionally a preconfigured C<REST::Client> object, which is mostly used for
+testing.
 
-    my $c = WWW::Challonge->new($api_key);
+    my $c  = WWW::Challonge->new($api_key);
+	my $c2 = WWW::Challonge->new({ key => $api_key, client => $my_rest_client });
 
 =cut
 
 sub new
 {
-	# Get the API key:
+	# Get the arguments:
 	my $class = shift;
-	my $key = shift;
+	my $args = shift;
 
-	# Create a REST client to interface Challonge:
-	my $client = REST::Client->new();
-	$client->setHost("https://api.challonge.com/v1");
+	my $key;
+	my $client;
 
-	# Try to get some content and check the response code:
-	$client->GET("/tournaments.json?api_key=$key");
-
-	# Check to see if the API key is valid:
-	if($client->responseCode() eq '401')
+	# If the argument is a scalar, use it as the API key:
+	if(! ref $args)
 	{
-		# If it isn't, warn the user and exit:
-		carp "Challonge API key is invalid.";
-		return undef;
+		$key = $args;
+
+		# Create a REST client to interface Challonge:
+		$client = REST::Client->new();
+		$client->setHost("https://api.challonge.com/v1");
+
+		# Try to get some content and check the response code:
+		$client->GET("/tournaments.json?api_key=$key");
+
+		# Check to see if the API key is valid:
+		if($client->responseCode() eq '401')
+		{
+			# If it isn't, warn the user and exit:
+			carp "Challonge API key is invalid.";
+			return undef;
+		}
+	}
+	elsif(ref $args eq "HASH")
+	{
+		croak "'client' must be a REST::Client object"
+			unless((defined $args->{client}) &&
+			(UNIVERSAL::isa($args->{client}, "REST::Client")));
+
+		$client = $args->{client};
+		$key = $args->{key} // "";
+	}
+	else
+	{
+		croak "Expected scalar or hashref";
 	}
 
-	# Otherwise, keep the key and the client in an object and return:
+	# Create and return the object:
 	my $c = { key => $key, client => $client };
 	bless $c, $class;
 }
