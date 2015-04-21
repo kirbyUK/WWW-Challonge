@@ -517,7 +517,7 @@ sub __handle_error
 	}
 }
 
-=head2 __post
+=head2 __json_request
 
 Transforms a URI, verb and hashref to a L<HTTP::Request> object to use for a
 POST/PUT request with the hashref transformed to JSON.
