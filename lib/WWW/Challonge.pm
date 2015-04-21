@@ -1,12 +1,16 @@
 package WWW::Challonge;
 use WWW::Challonge::Tournament;
-use REST::Client;
+use LWP::UserAgent;
 use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
+use Data::Dumper;
 
 use 5.010;
 use strict;
 use warnings;
+
+sub __handle_error;
+sub __json_request;
 
 =head1 NAME
 
@@ -19,6 +23,7 @@ Version 0.20
 =cut
 
 our $VERSION = '0.20';
+our $HOST = "https://api.challonge.com/v1";
 
 =head1 SYNOPSIS
 
@@ -35,11 +40,11 @@ as documented L<here|http:://api.challonge.com/v1>.
 =head2 new
 
 Creates a new C<WWW::Challonge> object. Takes in an API key, which is required,
-and optionally a preconfigured C<REST::Client> object, which is mostly used for
+and optionally a preconfigured L<LWP::UserAgent> object, which is mostly used for
 testing.
 
     my $c  = WWW::Challonge->new($api_key);
-	my $c2 = WWW::Challonge->new({ key => $api_key, client => $my_rest_client });
+	my $c2 = WWW::Challonge->new({ key => $api_key, client => $my_client });
 
 =cut
 
@@ -57,26 +62,24 @@ sub new
 	{
 		$key = $args;
 
-		# Create a REST client to interface Challonge:
-		$client = REST::Client->new();
-		$client->setHost("https://api.challonge.com/v1");
+		# Create an LWP useragent to interface Challonge:
+		$client = LWP::UserAgent->new;
 
 		# Try to get some content and check the response code:
-		$client->GET("/tournaments.json?api_key=$key");
+		my $response = $client->get("$HOST/tournaments.json?api_key=$key");
 
 		# Check to see if the API key is valid:
-		if($client->responseCode() eq '401')
+		if($response->is_error)
 		{
-			# If it isn't, warn the user and exit:
-			carp "Challonge API key is invalid.";
-			return undef;
+			croak "Challonge API key is invalid" if($response->code == 401);
+			__handle_error $response;
 		}
 	}
 	elsif(ref $args eq "HASH")
 	{
-		croak "'client' must be a REST::Client object"
+		croak "'client' must be a LWP::UserAgent object"
 			unless((defined $args->{client}) &&
-			(UNIVERSAL::isa($args->{client}, "REST::Client")));
+			(UNIVERSAL::isa($args->{client}, "LWP::UserAgent")));
 
 		$client = $args->{client};
 		$key = $args->{key} // "";
@@ -173,7 +176,7 @@ sub index
 	my $client = $self->{client};
 
 	# The intial request URL:
-	my $req = "/tournaments.json?api_key=$key";
+	my $req = "$HOST/tournaments.json?api_key=$key";
 
 	# Loop through the options (if any) and add them on:
 	for my $option(keys %{$options})
@@ -183,7 +186,7 @@ sub index
 		{
 			if($options->{$option} !~ /^all|pending|in_progress|ended$/)
 			{
-				carp "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -191,7 +194,7 @@ sub index
 		{
 			if($options->{$option} !~ /^(single|double)_elimination|round_robin|swiss$/)
 			{
-				carp "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -199,7 +202,7 @@ sub index
 		{
 			if($options->{$option} !~ /^\d{4}-\d{2}-\d{2}$/)
 			{
-				carp "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -207,7 +210,7 @@ sub index
 		{
 			if($options->{$option} !~ /^[a-zA-Z0-9_]*$/)
 			{
-				carp "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -221,11 +224,14 @@ sub index
 	}
 
 	# Make the request:
-	$client->GET($req);
+	my $response = $client->get($req);
+
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# Make a new tournament object for every tourney returned:
 	my @tournaments;
-	for my $tournament(@{from_json($client->responseContent())})
+	for my $tournament(@{from_json($response->decoded_content)})
 	{
 		push @tournaments, WWW::Challonge::Tournament->new($tournament,
 			$key, $client);
@@ -253,23 +259,19 @@ sub show
 	my $self = shift;
 	my $url = shift;
 
-	# Get the key and REST client:
+	# Get the key and client:
 	my $key = $self->{key};
 	my $client = $self->{client};
 
 	# Try to get the tournament:
-	$client->GET("/tournaments/$url.json?api_key=$key");
+	my $response = $client->get("$HOST/tournaments/$url.json?api_key=$key");
 
 	# Check for any errors:
-	if($client->responseCode eq '404')
-	{
-		carp "Tournament '$url' not found\n";
-		return undef;
-	}
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# Otherwise create a tourney with the object and return it:
 	my $tourney = WWW::Challonge::Tournament->new(
-		from_json($client->responseContent), $key, $client);
+		from_json($response->decoded_content), $key, $client);
 	return $tourney;
 }
 
@@ -460,42 +462,81 @@ sub create
 	my $self = shift;
 	my $args = shift;
 
-	# Get the key and REST client:
+	# Get the key and client:
 	my $key = $self->{key};
 	my $client = $self->{client};
 
 	# Fail if name and URL aren't given:
 	if((! defined $args->{name}) && (! defined $args->{url}))
 	{
-		carp "Name and URL are required to create a tournament";
-		return undef;
+		croak "Name and URL are required to create a tournament";
 	}
 
 	# Check the arguments and values are valid:
 	return undef unless(WWW::Challonge::Tournament::__args_are_valid($args));
 
-	# Add in the API key and convert to a POST request:
+	# Encapsulate the API key and the arguments in a single hashref:
 	my $params = { api_key => $key, tournament => $args };
 
 	# Now we have all the arguments validated, send the POST request:
-	$client->POST("/tournaments.json", to_json($params),
-		{ "Content-Type" => 'application/json' });
+	my $response = $client->request(
+		__json_request("$HOST/tournaments.json", "POST", $params));
 
 	# Check for any errors:
-	if($client->responseCode >= 300)
-	{
-		my $error = from_json($client->responseContent)->{errors}->[0];
-		if($error =~ /taken/)
-		{
-			carp "URL '", $args->{url}, "' is already taken";
-		}
-		return undef;
-	}
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# Otherwise, make a tournament object and return it:
 	my $t = WWW::Challonge::Tournament->new(
-		from_json($client->responseContent), $key, $client);
+		from_json($response->decoded_content), $key, $client);
 	return $t;
+}
+
+=head2 __handle_error
+
+Used throughout the module to deal with when the Challonge API returns an
+error of some kind. Takes a L<HTTP::Response> object.
+
+=cut
+
+sub __handle_error
+{
+	my $response = shift;
+
+	# Determine if the response is JSON or not:
+	eval { from_json($response->decoded_content) };
+	unless($@)
+	{
+		for my $error(@{from_json($response->decoded_content)->{errors}})
+		{
+			croak "(" . $response->code . ") " . $error;
+		}
+	}
+	else
+	{
+		croak $response->code;
+	}
+}
+
+=head2 __post
+
+Transforms a URI, verb and hashref to a L<HTTP::Request> object to use for a
+POST/PUT request with the hashref transformed to JSON.
+
+=cut
+
+sub __json_request
+{
+	my $uri = shift;
+	my $action = shift;
+	my $params = shift;
+
+	my $req = HTTP::Request->new($action, $uri);
+	$req->header('Content-Type' => 'application/json');
+	$req->content(to_json($params));
+
+	print Dumper $req;
+
+	return $req;
 }
 
 =head1 AUTHOR
