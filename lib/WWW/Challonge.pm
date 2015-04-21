@@ -3,7 +3,6 @@ use WWW::Challonge::Tournament;
 use LWP::UserAgent;
 use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
-use Data::Dumper;
 
 use 5.010;
 use strict;
@@ -533,8 +532,6 @@ sub __json_request
 	my $req = HTTP::Request->new($action, $uri);
 	$req->header('Content-Type' => 'application/json');
 	$req->content(to_json($params));
-
-	print Dumper $req;
 
 	return $req;
 }
