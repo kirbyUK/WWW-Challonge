@@ -3,8 +3,9 @@ package WWW::Challonge::Match;
 use 5.010;
 use strict;
 use warnings;
+use WWW::Challonge;
 use WWW::Challonge::Match::Attachment;
-use Carp qw/carp/;
+use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
 
 sub __args_are_valid;
@@ -95,6 +96,7 @@ sub update
 	my $client = $self->{client};
 	my $url = $self->{match}->{tournament_id};
 	my $id = $self->{match}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	my $params = { api_key => $key, match => { } };
 
@@ -151,27 +153,19 @@ sub update
 		}
 
 		# Make the PUT call:
-		$client->PUT("/tournaments/$url/matches/$id.json", to_json($params),
-			{ "Content-Type" => 'application/json' });
+		my $response = $client->request(WWW::Challonge::__json_request(
+			"$HOST/tournaments/$url/matches/$id.json", "PUT", $params));
 
-		# Check if it was successful:
-		if($client->responseCode > 300)
-		{
-			my $errors = from_json($client->responseContent)->{errors};
-			for my $error(@{$errors})
-			{
-				carp "$error" . " (" . $client->responseCode . ")";
-			}
-			return undef;
-		}
+		# Check for any errors:
+		WWW::Challonge::__handle_error $response if($response->is_error);
 
-		# If so, update the store of the match:
-		$self->{match} = from_json($client->responseContent)->{match};
+		# If not, update the store of the match:
+		$self->{match} = from_json($response->decoded_content)->{match};
 	}
 	else
 	{
 		# Otherwise, give an error and exit:
-		carp "Expected an arrayref or hashref";
+		croak "Expected an arrayref or hashref";
 		return undef;
 	}
 }
