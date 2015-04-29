@@ -538,7 +538,7 @@ sub participant_index
 
 	# If not, make an object for every participant:
 	my $participants = [];
-	for my $participant(@{from_json($client->responseContent)})
+	for my $participant(@{from_json($response->decoded_content)})
 	{
 		push @{$participants}, WWW::Challonge::Participant->new($participant,
 			$key, $client);

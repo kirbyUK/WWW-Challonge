@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use WWW::Challonge;
 use Test::More tests => 8;
-use Data::Dumper;
 
 # Check if compiles:
 BEGIN

@@ -3,7 +3,8 @@ package WWW::Challonge::Participant;
 use 5.010;
 use strict;
 use warnings;
-use Carp qw/carp/;
+use WWW::Challonge;
+use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
 
 sub __is_kill;
@@ -78,6 +79,7 @@ sub update
 	my $client = $self->{client};
 	my $url = $self->{participant}->{tournament_id};
 	my $id = $self->{participant}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Check the arguments and values are valid:
 	return undef unless(WWW::Challonge::Participant::__args_are_valid($args));
@@ -86,22 +88,13 @@ sub update
 	my $params = { api_key => $key, participant => $args };
 
 	# Make the PUT request:
-	$client->PUT("/tournaments/$url/participants/$id.json", to_json($params),
-		{ "Content-Type" => 'application/json' });
+	my $response = $client->request(WWW::Challonge::__json_request(
+		"$HOST/tournaments/$url/participants/$id.json", "PUT", $params));
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
-	# If so, set the object's attributes to the updated version:
-	$self->{participant} = from_json($client->responseContent)->{participant};
+	return 1;
 }
 
 =head2 check_in
@@ -124,24 +117,20 @@ sub check_in
 	my $client = $self->{client};
 	my $url = $self->{participant}->{tournament_id};
 	my $id = $self->{participant}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Add the API key:
 	my $params = to_json({ api_key => $key });
 
 	# Make the POST call:
-	$client->POST("/tournaments/$url/participants/$id/check_in.json", $params,
-		{ "Content-Type" => 'application/json' });
+	my $response = $client->request(WWW::Challonge::__json_request(
+		"$HOST/tournaments/$url/participants/$id/check_in.json", "POST",
+		$params));
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
+
+	return 1;
 }
 
 =head2 destroy
@@ -169,23 +158,19 @@ sub destroy
 	my $client = $self->{client};
 	my $url = $self->{participant}->{tournament_id};
 	my $id = $self->{participant}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Make the DELETE call:
-	$client->DELETE("/tournaments/$url/participants/$id.json?api_key=$key");
+	my $response = $client->delete(
+		"$HOST/tournaments/$url/participants/$id.json?api_key=$key");
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# If so, set the alive key to false to prevent further operations:
 	$self->{alive} = 0;
+
+	return 1;
 }
 
 =head2 randomize
@@ -208,24 +193,17 @@ sub randomize
 	my $key = $self->{key};
 	my $client = $self->{client};
 	my $url = $self->{participant}->{tournament_id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Add the API key:
-	my $params = to_json({ api_key => $key });
+	my $params = { api_key => $key };
 
 	# Make the POST call:
-	$client->POST("/tournaments/$url/participants/randomize.json", $params,
-		{ "Content-Type" => 'application/json' });
+	my $response = $client->request(WWW::Challonge::__json_request(
+		"$HOST/tournaments/$url/participants/randomize.json", "POST", $params));
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	return 1;
 }
@@ -312,23 +290,17 @@ sub attributes
 	my $client = $self->{client};
 	my $url = $self->{participant}->{tournament_id};
 	my $id = $self->{participant}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Get the most recent version:
-	$client->GET("/tournaments/$url/participants/$id.json?api_key=$key");
+	my $response = $client->get(
+		"$HOST/tournaments/$url/participants/$id.json?api_key=$key");
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# If so, save it and then return it:
-	$self->{participant} = from_json($client->responseContent)->{participant};
+	$self->{participant} = from_json($response->decoded_content)->{participant};
 	return $self->{participant};
 }
 
@@ -342,7 +314,7 @@ that has been successfully destroyed.
 
 sub __is_kill
 {
-	carp "Participant has been destroyed";
+	croak "Participant has been destroyed";
 	return undef;
 }
 
@@ -387,7 +359,7 @@ sub __args_are_valid
 		{
 			if(length $args->{$arg} > 255)
 			{
-				carp "'$arg' input is too long (max. 255 characters)";
+				croak "'$arg' input is too long (max. 255 characters)";
 			}
 		}
 	}
@@ -397,7 +369,7 @@ sub __args_are_valid
 		# Make sure the argument is an integer:
 		if($args->{$arg} !~ /^\d*$/)
 		{
-			carp "Value '" . $args->{$arg} . "' is not a valid integer for " .
+			croak "Value '" . $args->{$arg} . "' is not a valid integer for " .
 				"argument '" . $arg . "'";
 			return undef;
 		}
