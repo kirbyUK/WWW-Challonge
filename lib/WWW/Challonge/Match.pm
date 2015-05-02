@@ -7,6 +7,7 @@ use WWW::Challonge;
 use WWW::Challonge::Match::Attachment;
 use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
+use HTTP::Request;
 
 sub __args_are_valid;
 
@@ -245,23 +246,17 @@ sub attributes
 	my $client = $self->{client};
 	my $url = $self->{match}->{tournament_id};
 	my $id = $self->{match}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Get the most recent version:
-	$client->GET("/tournaments/$url/matches/$id.json?api_key=$key");
+	my $response = $client->get(
+		"$HOST/tournaments/$url/matches/$id.json?api_key=$key");
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
-	# If so, save it and then return it:
-	$self->{match} = from_json($client->responseContent)->{match};
+	# If not, save it and then return it:
+	$self->{match} = from_json($response->decoded_content)->{match};
 	return $self->{match};
 }
 
@@ -283,24 +278,18 @@ sub index
 	my $client = $self->{client};
 	my $url = $self->{match}->{tournament_id};
 	my $id = $self->{match}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Get the match attachments:
-	$client->GET("/tournaments/$url/matches/$id/attachments.json?api_key=$key");
+	my $response = $client->get(
+		"$HOST/tournaments/$url/matches/$id/attachments.json?api_key=$key");
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# If it was successful, create the objects and return them:
 	my $attachments = [];
-	for my $att(@{from_json($client->responseContent)})
+	for my $att(@{from_json($response->decoded_content)})
 	{
 		push @{$attachments},
 			WWW::Challonge::Match::Attachment->new($att, $url, $key, $client);
@@ -327,25 +316,18 @@ sub show
 	my $client = $self->{client};
 	my $url = $self->{match}->{tournament_id};
 	my $id = $self->{match}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Get the match attachments:
-	$client->GET(
-		"/tournaments/$url/matches/$id/attachments/$atth.json?api_key=$key");
+	my $response = $client->get(
+		"$HOST/tournaments/$url/matches/$id/attachments/$atth.json?api_key=$key");
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# If it was successful, create the object and return it:
 	my $attachment = WWW::Challonge::Match::Attachment->new(
-		from_json($client->responseContent),
+		from_json($response->decoded_content),
 		$url,
 		$key,
 		$client
@@ -401,39 +383,45 @@ sub create
 	my $client = $self->{client};
 	my $url = $self->{match}->{tournament_id};
 	my $id = $self->{match}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Check the arguments are valid:
 	return undef
 		unless(WWW::Challonge::Match::Attachment::__args_are_valid($args));
 
-#	if(defined $args->{asset})
-#	{
-#		$args->{asset} = [ $args->{asset} ];
-#	}
+	if(defined $args->{asset})
+	{
+		if(! -f $args->{asset})
+		{
+			croak "No such file: " . $args->{asset};
+		}
+		else
+		{
+			$args->{asset} = [ $args->{asset} ];
+		}
+	}
+
+
+	my $params = [ api_key => $key ];
+	while(my ($key, $value) = each %{$args})
+	{
+		push @{$params}, [ $key => $value ];
+	}
 
 	# Make the POST call:
-	my $params = { api_key => $key, match_attachment => $args };
-#	$client->POST("/tournaments/$url/matches/$id/attachments.json",
-#		$params, { "Content-Type" => 'multipart/form-data' });
-	$client->POST("/tournaments/$url/matches/$id/attachments.json",
-		to_json($params), { "Content-Type" => 'application/json' });
+	my $request = HTTP::Request->new(
+		POST => "$HOST/tournaments/$url/matches/$id/attachments.json",
+		"Content-Type" => 'multipart/form-data',
+		"Content" => $params
+	);
+	my $response = $client->request($request);
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		print $client->responseCode, "\n";
-		print $client->responseContent, "\n";
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# If so, make an object and return it:
 	return WWW::Challonge::Match::Attachment->new(
-		from_json($client->responseContent),
+		from_json($response->decoded_content),
 		$url,
 		$key,
 		$client
