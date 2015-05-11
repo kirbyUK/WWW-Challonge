@@ -345,8 +345,7 @@ must be true for this to succeed.
 
 =item asset
 
-Currently unsupported. A file upload (250KB). If provided, the 'url' parameter
-will be ignored.
+A file upload (max 250KB). If provided, the 'url' parameter will be ignored.
 
 =item url
 
@@ -360,7 +359,7 @@ Text to the describte the file or URL, or it can simply be standalone text.
 
 	# A simple URL:
 	my $ma = $m->create({
-		url => www.example.com/image.png",
+		url => http://www.example.com/image.png",
 		description => "An example URL",
 	});
 
