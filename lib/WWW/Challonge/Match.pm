@@ -7,7 +7,6 @@ use WWW::Challonge;
 use WWW::Challonge::Match::Attachment;
 use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
-use Data::Dumper;
 
 sub __args_are_valid;
 
@@ -395,7 +394,6 @@ sub create
 	# Make the POST call:
 	my @params = map { "match_attachment[" . $_ . "]" => $args->{$_} }
 		keys %{$args};
-	print Dumper(\@params);
 	my $response = $client->post(
 		"$HOST/tournaments/$url/matches/$id/attachments.json",
 		"Content-Type" => 'form-data',
