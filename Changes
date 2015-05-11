@@ -4,6 +4,7 @@ Revision history for WWW-Challonge
 		* Switched to LWP::UserAgent.
 		* Incremented minium Perl version to v5.10.0.
 		* Changed warnings/errors to use Carp.
+		* Added support for file uploads with WWW::Challonge::Match::Attachment
 
 0.20	2015-04-18
 		* Various POD fixes

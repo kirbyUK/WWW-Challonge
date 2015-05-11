@@ -7,7 +7,7 @@ use WWW::Challonge;
 use WWW::Challonge::Match::Attachment;
 use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
-use HTTP::Request;
+use Data::Dumper;
 
 sub __args_are_valid;
 
@@ -389,32 +389,18 @@ sub create
 	return undef
 		unless(WWW::Challonge::Match::Attachment::__args_are_valid($args));
 
-	if(defined $args->{asset})
-	{
-		if(! -f $args->{asset})
-		{
-			croak "No such file: " . $args->{asset};
-		}
-		else
-		{
-			$args->{asset} = [ $args->{asset} ];
-		}
-	}
-
-
-	my $params = [ api_key => $key ];
-	while(my ($key, $value) = each %{$args})
-	{
-		push @{$params}, [ $key => $value ];
-	}
+	# Wrap the filename in an arrayref for HTTP::Request::Common:
+	$args->{asset} = [ $args->{asset} ] if(defined $args->{asset});
 
 	# Make the POST call:
-	my $request = HTTP::Request->new(
-		POST => "$HOST/tournaments/$url/matches/$id/attachments.json",
-		"Content-Type" => 'multipart/form-data',
-		"Content" => $params
+	my @params = map { "match_attachment[" . $_ . "]" => $args->{$_} }
+		keys %{$args};
+	print Dumper(\@params);
+	my $response = $client->post(
+		"$HOST/tournaments/$url/matches/$id/attachments.json",
+		"Content-Type" => 'form-data',
+		"Content" => [ "api_key" => $key, @params ],
 	);
-	my $response = $client->request($request);
 
 	# Check for any errors:
 	WWW::Challonge::__handle_error $response if($response->is_error);

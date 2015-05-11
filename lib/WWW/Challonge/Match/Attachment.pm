@@ -237,12 +237,12 @@ sub __args_are_valid
 	{
 		if($arg eq "asset")
 		{
-#			if(! -f $args->{$arg})
-#			{
-#				carp "No such file: '" . $args->{$arg} . "'";
-				carp "Asset uploading is currently unsupported";
+			if(! -f $args->{$arg})
+			{
+				carp "No such file: '" . $args->{$arg} . "'";
+#				carp "Asset uploading is currently unsupported";
 				return undef;
-#			}
+			}
 		}
 		elsif($arg eq "url")
 		{
@@ -255,6 +255,7 @@ sub __args_are_valid
 		elsif($arg ne "description")
 		{
 			carp "Ignoring unrecognised argument '" . $args->{$arg} . "'";
+			delete $args->{$arg};
 		}
 	}
 
