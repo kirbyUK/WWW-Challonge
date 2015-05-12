@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use WWW::Challonge;
-use Test::More tests => 2;
+use Test::More tests => 4;
 
 # Check if compiles:
 BEGIN
@@ -29,16 +29,34 @@ SKIP:
 		name => "Perl Test",
 		url => $url,
 	});
-	$t->create_participant({ name => "alice" });
-	$t->create_participant({ name => "bob" });
+	my $p1 = $t->participant_create({ name => "alice" });
+	my $p2 = $t->participant_create({ name => "bob" });
 	$t->start;
 
-	# Get the match:
+	# Test the index works:
 	my $test;
 	subtest "index works" => sub
 	{
-		my @matches = $t->match_index;
-		is(@matches, 1, "Index gives one match");
-		isa_ok($matches[0], "WWW::Challonge::Match");
+		my $matches = $t->match_index;
+		is(@{$matches}, 1, "Index gives one match");
+		isa_ok($matches->[0], "WWW::Challonge::Match");
+		$test = $matches->[0];
+	};
+
+	# Test attributes:
+	subtest "attributes work" => sub
+	{
+		is($test->attributes->{player1_id}, $p1->attributes->{id},
+			"Player 1 id matches");
+		is($test->attributes->{player2_id}, $p2->attributes->{id},
+			"Player 2 id matches");
+	};
+
+	# Test updating scores works:
+	subtest "updating scores works" => sub
+	{
+		ok($test->update(["2-1"]), "Match updates ok");
+		is($test->attributes->{winner_id}, $p1->attributes->{id},
+			"Player 1 is the winner");
 	};
 }

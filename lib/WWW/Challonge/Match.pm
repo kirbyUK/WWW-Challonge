@@ -159,8 +159,7 @@ sub update
 		# Check for any errors:
 		WWW::Challonge::__handle_error $response if($response->is_error);
 
-		# If not, update the store of the match:
-		$self->{match} = from_json($response->decoded_content)->{match};
+		return 1;
 	}
 	else
 	{
