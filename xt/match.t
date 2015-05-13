@@ -59,4 +59,5 @@ SKIP:
 		is($test->attributes->{winner_id}, $p1->attributes->{id},
 			"Player 1 is the winner");
 	};
+	$t->destroy;
 }

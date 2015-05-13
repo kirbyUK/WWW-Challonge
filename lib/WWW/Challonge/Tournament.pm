@@ -913,7 +913,7 @@ sub __args_are_valid
 		@{$valid_args{string}},
 		@{$valid_args{integer}},
 		@{$valid_args{decimal}},
-		@{$valid_args{boolean}},
+		@{$valid_args{bool}},
 		@{$valid_args{datetime}}
 	);
 	my $is_valid = 0;

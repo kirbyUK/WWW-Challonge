@@ -3,7 +3,9 @@ package WWW::Challonge::Match::Attachment;
 use 5.010;
 use strict;
 use warnings;
-use Carp qw/carp/;
+use WWW::Challonge;
+use HTTP::Request::Common qw/POST/;
+use Carp qw/carp croak/;
 use JSON qw/to_json from_json/;
 
 sub __args_are_valid;
@@ -77,32 +79,30 @@ sub update
 	my $url = $self->{tournament};
 	my $match_id = $self->{attachment}->{match_id};
 	my $id = $self->{attachment}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Check the arguments are valid:
 	return undef
 		unless(WWW::Challonge::Match::Attachment::__args_are_valid($args));
 
+	# Wrap the filename in an arrayref for HTTP::Request::Common:
+	$args->{asset} = [ $args->{asset} ] if(defined $args->{asset});
+
 	# Make the PUT call:
-	my $params = { api_key => $key, match_attachment => $args };
-	$client->PUT("/tournaments/$url/matches/$match_id/attachments/$id.json",
-		to_json($params), { "Content-Type" => 'application/json' });
+	my @params = map { "match_attachment[" . $_ . "]" => $args->{$_} }
+		keys %{$args};
+	my $request = POST(
+		"$HOST/tournaments/$url/matches/$match_id/attachments/$id.json",
+		"Content-Type" => 'form-data',
+		"Content" => [ "api_key" => $key, @params ],
+	);
+	$request->method('PUT'); # Ew...
+	my $response = $client->request($request);
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		print $client->responseCode, "\n";
-		print $client->responseContent, "\n";
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
-	# If so, set the object's attributes to the updated version:
-	$self->{attachment} =
-		from_json($client->responseContent)->{match_attachment};
+	return 1;
 }
 
 =head2 destroy
@@ -129,24 +129,19 @@ sub destroy
 	my $url = $self->{tournament};
 	my $match_id = $self->{attachment}->{match_id};
 	my $id = $self->{attachment}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Make the DELETE call:
-	$client->DELETE(
-		"/tournaments/$url/matches/$match_id/attachments/$id.json?api_key=$key");
+	my $response = $client->delete(
+		"$HOST/tournaments/$url/matches/$match_id/attachments/$id.json?api_key=$key");
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
-	# If so, mark the oject as dead:
+	# If not, mark the object as dead:
 	$self->{alive} = 0;
+
+	return 1;
 }
 
 =head2 attributes
@@ -200,25 +195,18 @@ sub attributes
 	my $url = $self->{tournament};
 	my $match_id = $self->{attachment}->{match_id};
 	my $id = $self->{attachment}->{id};
+	my $HOST = $WWW::Challonge::HOST;
 
 	# Get the most recent version:
-	$client->GET(
-		"/tournaments/$url/matches/$match_id/attachments/$id.json?api_key=$key");
+	my $response = $client->get(
+		"$HOST/tournaments/$url/matches/$match_id/attachments/$id.json?api_key=$key");
 
-	# Check if it was successful:
-	if($client->responseCode > 300)
-	{
-		my $errors = from_json($client->responseContent)->{errors};
-		for my $error(@{$errors})
-		{
-			carp "$error" . " (" . $client->responseCode . ")";
-		}
-		return undef;
-	}
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
-	# If so, save the most recent and return it:
+	# If not, save the most recent and return it:
 	$client->{attachment} =
-		from_json($client->responseContent)->{match_attachment};
+		from_json($response->decoded_content)->{match_attachment};
 	return $client->{attachment};
 }
 
@@ -240,7 +228,6 @@ sub __args_are_valid
 			if(! -f $args->{$arg})
 			{
 				carp "No such file: '" . $args->{$arg} . "'";
-#				carp "Asset uploading is currently unsupported";
 				return undef;
 			}
 		}
@@ -271,7 +258,7 @@ L<WWW::Challonge::Match::Attachment/destroy>.
 
 sub __is_kill
 {
-	carp "Attachment has been destroyed";
+	croak "Attachment has been destroyed";
 	return undef;
 }
 
