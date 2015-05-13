@@ -19,7 +19,7 @@ WriteMakefile(
 		'Test::Deep' => 0,
     },
     PREREQ_PM => {
-		"REST::Client"		=> 271,
+		"LWP::UserAgent"	=> 6.13,
 		"JSON"				=> 2.61,
 		"Carp"				=> 1.04,
     },

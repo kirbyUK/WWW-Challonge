@@ -17,11 +17,11 @@ WWW::Challonge - Perl wrapper for the Challonge API
 
 =head1 VERSION
 
-Version 0.20
+Version 0.30
 
 =cut
 
-our $VERSION = '0.20';
+our $VERSION = '0.30';
 our $HOST = "https://api.challonge.com/v1";
 
 =head1 SYNOPSIS
