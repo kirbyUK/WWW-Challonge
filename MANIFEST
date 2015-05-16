@@ -11,8 +11,14 @@ MANIFEST.SKIP
 README
 README.md
 t/00-load.t
-t/challonge.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
+xt/attachment.t
 xt/boilerplate.t
+xt/challonge.t
+xt/match.t
+xt/participant.t
+xt/test_file
+xt/test_file2
+xt/tournament.t
