@@ -1,5 +1,8 @@
 Revision history for WWW-Challonge
 
+0.31	2015-05-16
+		* Updated MANIFEST
+
 0.30	2015-05-13
 		* Switched to LWP::UserAgent.
 		* Incremented minium Perl version to v5.10.0.
