@@ -25,19 +25,19 @@ SKIP:
 	my $url = "";
 	my @chars = ("a".."z", "A".."Z", "_");
 	$url .= $chars[rand @chars] for(1..20);
-	my $t = $c->create({
+	my $t = $c->new_tournament({
 		name => "Perl Test",
 		url => $url,
 	});
-	my $p1 = $t->participant_create({ name => "alice" });
-	my $p2 = $t->participant_create({ name => "bob" });
+	my $p1 = $t->new_participant({ name => "alice" });
+	my $p2 = $t->new_participant({ name => "bob" });
 	$t->start;
 
 	# Test the index works:
 	my $test;
 	subtest "index works" => sub
 	{
-		my $matches = $t->match_index;
+		my $matches = $t->matches;
 		is(@{$matches}, 1, "Index gives one match");
 		isa_ok($matches->[0], "WWW::Challonge::Match");
 		$test = $matches->[0];
@@ -60,4 +60,5 @@ SKIP:
 			"Player 1 is the winner");
 	};
 	$t->destroy;
+	done_testing();
 }

@@ -65,6 +65,7 @@ sub new
 		$client = LWP::UserAgent->new;
 
 		# Try to get some content and check the response code:
+		print "$HOST/tournaments.json?api_key=$key\n";
 		my $response = $client->get("$HOST/tournaments.json?api_key=$key");
 
 		# Check to see if the API key is valid:
@@ -93,7 +94,7 @@ sub new
 	bless $c, $class;
 }
 
-=head2 index
+=head2 tournaments
 
 Returns an arrayref of all C<WWW::Challonge::Tournament> objects owned by the
 user authenticated with in the 'new' request (the logged in user, so to speak).
@@ -157,15 +158,15 @@ Gets all tournaments created under the given subdomian.
 
 =back
 
-	my $tournies  = $c->index();
-	my $tournies2 = $c->index({
+	my $tournies  = $c->tournaments;
+	my $tournies2 = $c->tournaments({
 		type => "double_elimination",
 		created_after => "2015-03-18",
 	});
 
 =cut
 
-sub index
+sub tournaments
 {
 	my $self = shift;
 	my $options = shift // {};
@@ -240,20 +241,20 @@ sub index
 	return \@tournaments;
 }
 
-=head2 show
+=head2 tournament
 
 Gets a single C<WWW::Challonge::Tournament> object by the given id or URL:
 
-	my $tourney = $c->show("sample_tournament_1");
+	my $tourney = $c->tournament("sample_tournament_1");
 
 If the tournament has a subdomain (e.g. test.challonge.com/mytourney), simply
 specify like so:
 
-	my $tourney = $c->show("test-mytourney")
+	my $tourney = $c->tournament("test-mytourney")
 
 =cut
 
-sub show
+sub tournament
 {
 	my $self = shift;
 	my $url = shift;
@@ -274,7 +275,7 @@ sub show
 	return $tourney;
 }
 
-=head2 create
+=head2 new_tournament
 
 Creates a new tournament, and returns it as a C<WWW::Challonge::Tournament>
 object. It takes an hashref of arguments. The name and URL are required, all
@@ -448,7 +449,7 @@ Integer. The length of the check-in window in minutes.
 
 =back
 
-	my $tournament = $c->create({
+	my $tournament = $c->new_tournament({
 		name => "sample tournament",
 		url => "sample_tournament_1",
 		type => "double elimination"
@@ -456,7 +457,7 @@ Integer. The length of the check-in window in minutes.
 
 =cut
 
-sub create
+sub new_tournament
 {
 	my $self = shift;
 	my $args = shift;

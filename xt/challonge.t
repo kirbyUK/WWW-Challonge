@@ -29,9 +29,9 @@ SKIP:
 	};
 
 	# Test we can get an arrayref of all the user's tournaments:
-	subtest "index works" => sub
+	subtest "tournaments works" => sub
 	{
-		my $tournaments = $test->index;
+		my $tournaments = $test->tournaments;
 		is(ref $tournaments, "ARRAY", "Returned value is arrayref");
 		for my $tournament(@{$tournaments})
 		{
@@ -41,7 +41,7 @@ SKIP:
 
 	# Test a specific tournament (we test the specific attributes in
 	# tournament.t):
-	my $tournament = $test->show("perl_test_1");
+	my $tournament = $test->tournament("perl_test_1");
 	isa_ok($tournament, "WWW::Challonge::Tournament");
 
 	# Tests we can create a tournament:
@@ -56,6 +56,5 @@ SKIP:
 
 	# Destroy the tournament we just made so we don't clog up the account:
 	$new->destroy;
-
 	done_testing();
 }

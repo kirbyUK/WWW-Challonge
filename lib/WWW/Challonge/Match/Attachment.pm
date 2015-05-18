@@ -31,7 +31,7 @@ our $VERSION = '0.31';
 Takes a hashref representing the match attachment, the tournament id, the API
 key and the REST client and turns it into an object. This is mostly used by the
 module itself. To see how to create a match attachment, see
-L<WWW::Challonge::Match/create>.
+L<WWW::Challonge::Match/new_attachment>.
 
 	my $ma = WWW::Challonge::Match::Attachment->new($match, $id, $key, $client);
 
@@ -59,7 +59,7 @@ sub new
 =head2 update
 
 Updates the attributes of the match attachment. Takes the same arguments as
-L<WWW::Challonge::Match/create>.
+L<WWW::Challonge::Match/new_attachment>.
 
 	$ma->update({ url => "https://www.example.com/example2.png" });
 

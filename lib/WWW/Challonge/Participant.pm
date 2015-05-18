@@ -30,7 +30,7 @@ our $VERSION = '0.31';
 Takes a hashref representing the participant, the API key and the REST client
 and turns it into an object. This is mostly used by the module itself, to
 create a new participant within a tournament see
-L<WWW::Challonge::Tournament/participant_create>.
+L<WWW::Challonge::Tournament/new_participant>.
 
 	my $p = WWW::Challonge::Participant->new($participant, $key, $client);
 
@@ -56,7 +56,7 @@ sub new
 =head2 update
 
 Updates specific attributes of a participant. For a full list, see
-L<WWW::Challonge::Tournament/participant_create>. Unlike that method, however,
+L<WWW::Challonge::Tournament/new_participant>. Unlike that method, however,
 all arguments are optional.
 
 	$p->update({

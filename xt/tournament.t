@@ -25,7 +25,7 @@ SKIP:
 	my $url = "";
 	my @chars = ("a".."z", "A".."Z", "_");
 	$url .= $chars[rand @chars] for(1..20);
-	my $test = $c->create({
+	my $test = $c->new_tournament({
 		name => "Perl Test",
 		url => $url,
 	});
@@ -51,7 +51,7 @@ SKIP:
 	};
 
 	# Create two participants (participants are tested in 'participant.t'):
-	$test->participant_create({ name => $_ }) for(1..2);
+	$test->new_participant({ name => $_ }) for(1..2);
 
 	# Test we can start, finalise and reset a tournament:
 	subtest "start works" => sub
@@ -63,7 +63,7 @@ SKIP:
 
 	# Complete the match between the two players (matches are tested in
 	# 'match.t'):
-	$test->match_index->[0]->update(["1-0"]);
+	$test->matches->[0]->update(["1-0"]);
 
 	subtest "finalize works" => sub
 	{
@@ -87,4 +87,5 @@ SKIP:
 		like($at, qr/Tournament has been destroyed/, "Dies on attempting to
 			update destroyed tournament");
 	};
+	done_testing();
 }

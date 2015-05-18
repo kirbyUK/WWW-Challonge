@@ -258,16 +258,16 @@ sub attributes
 	return $self->{match};
 }
 
-=head2 index
+=head2 attachments
 
 Returns an arrayref of C<WWW::Challonge::Match::Attachment> objects for every
 attachment the match has.
 
-	my $attachments = $m->index;
+	my $attachments = $m->attachments;
 
 =cut
 
-sub index
+sub attachments
 {
 	my $self = shift;
 
@@ -295,16 +295,16 @@ sub index
 	return $attachments;
 }
 
-=head2 show
+=head2 attachment
 
 Returns a single C<WWW::Challonge::Match::Attachment> object for the
 attachment with the given ID:
 
-	my $ma = $m->show(124858);
+	my $ma = $m->attachment(124858);
 
 =cut
 
-sub show
+sub attachment
 {
 	my $self = shift;
 	my $atth = shift;
@@ -333,7 +333,7 @@ sub show
 	return $attachment;
 }
 
-=head2 create
+=head2 new_attachment
 
 Creates a new match attachment and returns the resulting
 C<WWW::Challonge::Match::Attachment> object. Takes the following arguments, at
@@ -357,20 +357,20 @@ Text to the describte the file or URL, or it can simply be standalone text.
 =back
 
 	# A simple URL:
-	my $ma = $m->create({
+	my $ma = $m->new_attachment({
 		url => http://www.example.com/image.png",
 		description => "An example URL",
 	});
 
 	# File uploads require a filename:
-	my $ma = $m->create({
+	my $ma = $m->new_attachment({
 		asset => "example.png",
 		description => "An example file",
 	});
 
 =cut
 
-sub create
+sub new_attachment
 {
 	my $self = shift;
 	my $args = shift;
@@ -481,7 +481,6 @@ automatically be notified of progress on your bug as I make changes.
 You can find documentation for this module with the perldoc command.
 
     perldoc WWW::Challonge::Match
-
 
 You can also look for information at:
 

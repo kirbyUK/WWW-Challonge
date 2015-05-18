@@ -29,7 +29,7 @@ our $VERSION = '0.31';
 
 Takes a hashref representing the tournament, the API key and the REST client
 and turns it into an object. This is mostly used by the module itself, to
-create a new tournament see L<WWW::Challonge/create>.
+create a new tournament see L<WWW::Challonge/new_tournament>.
 
 	my $t = WWW::Challonge::Tournament->new($tournament, $key, $client);
 
@@ -55,7 +55,7 @@ sub new
 =head2 update
 
 Updates specific attributes of a tournament. For a full list, see
-L<WWW::Challonge/create>. Unlike that method, however, all of the arguments
+L<WWW::Challonge/new_tournament>. Unlike that method, however, all of the arguments
 are optional.
 
 	$t->update({
@@ -503,19 +503,19 @@ sub attributes
 	return $self->{tournament};
 }
 
-=head2 participant_index
+=head2 participants
 
 Returns an arrayref of C<WWW::Challonge::Participant> objects for every
 participant in the tourney.
 
-	my $p = $t->participant_index;
+	my $p = $t->participants;
 	for my $participant(@{$p})
 	{
 		...
 
 =cut
 
-sub participant_index
+sub participants
 {
 	my $self = shift;
 
@@ -545,16 +545,16 @@ sub participant_index
 	return $participants;
 }
 
-=head2 participant_show
+=head2 participant
 
 Returns a single C<WWW::Challonge::Participant> object representing the
 participant with the given unique ID.
 
-	my $p = $t->participant_show(24279875);
+	my $p = $t->participant(24279875);
 
 =cut
 
-sub participant_show
+sub participant
 {
 	my $self = shift;
 	my $participant = shift;
@@ -581,7 +581,7 @@ sub participant_show
 	return $p;
 }
 
-=head2 participant_create
+=head2 new_participant
 
 Adds a new participant to the tournament, and if successful returns the newly
 created C<WWW::Challonge::Participant> object. The possible arguments are as
@@ -619,14 +619,14 @@ characters.
 
 =back
 
-	my $p = $t->participant_create({
+	my $p = $t->new_participant({
 		name => "test",
 		seed => 4
 	});
 
 =cut
 
-sub participant_create
+sub new_participant
 {
 	my $self = shift;
 	my $args = shift;
@@ -668,20 +668,20 @@ sub participant_create
 	return $p;
 }
 
-=head2 match_index
+=head2 matches
 
 Returns an arrayref of C<WWW::Challonge::Match> objects for every
 match in the tourney. The tournament must be in progress before this will
 return anything useful.
 
-	my $m = $t->match_index;
+	my $m = $t->matches;
 	for my $match(@{$m})
 	{
 		...
 
 =cut
 
-sub match_index
+sub matches
 {
 	my $self = shift;
 
@@ -711,16 +711,16 @@ sub match_index
 	return $matches;
 }
 
-=head2 match_show
+=head2 match
 
 Returns a single C<WWW::Challonge::Match> object representing the match with
 the given unique ID.
 
-	my $m = $t->match_show(24279875);
+	my $m = $t->match(24279875);
 
 =cut
 
-sub match_show
+sub match
 {
 	my $self = shift;
 	my $match = shift;

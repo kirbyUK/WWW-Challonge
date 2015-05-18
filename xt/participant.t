@@ -26,11 +26,11 @@ SKIP:
 	my $url = "";
 	my @chars = ("a".."z", "A".."Z", "_");
 	$url .= $chars[rand @chars] for(1..20);
-	my $t = $c->create({
+	my $t = $c->new_tournament({
 		name => "Perl Test",
 		url => $url,
 	});
-	my $test = $t->participant_create({
+	my $test = $t->new_participant({
 		name => "test",
 		misc => "Created by test program",
 	});
@@ -59,7 +59,7 @@ SKIP:
 	subtest "randomise works" => sub
 	{
 		# Make new participants, then get them in seed order:
-		$t->participant_create({ name => $_ }) for(1..20);
+		$t->new_participant({ name => $_ }) for(1..20);
 		my @first = sort { $a->attributes->{seed} <=> $b->attributes->{seed} }
 			$t->participant_index;
 
@@ -84,4 +84,5 @@ SKIP:
 	};
 
 	$t->destroy;
+	done_testing();
 }

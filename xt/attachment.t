@@ -25,21 +25,21 @@ SKIP:
 	my $url = "";
 	my @chars = ("a".."z", "A".."Z", "_");
 	$url .= $chars[rand @chars] for(1..20);
-	my $t = $c->create({
+	my $t = $c->new_tournament({
 		name => "Perl Test",
 		url => $url,
 		accept_attachments => 1,
 	});
-	my $p1 = $t->participant_create({ name => "alice" });
-	my $p2 = $t->participant_create({ name => "bob" });
+	my $p1 = $t->new_participant({ name => "alice" });
+	my $p2 = $t->new_participant({ name => "bob" });
 	$t->start;
-	my $match = $t->match_index->[0];
+	my $match = $t->matches->[0];
 
 	# Test create works:
 	my @attachments;
 	subtest "create works" => sub
 	{
-		push @attachments, $match->create({
+		push @attachments, $match->new_attachment({
 			url => "http://search.cpan.org/~kirby/WWW-Challonge/",
 			description => "The module's homepage",
 		});
@@ -48,7 +48,7 @@ SKIP:
 		SKIP:
 		{
 			skip "Missing test file to upload", 1 unless( -f "xt/test_file");
-			push @attachments, $match->create({
+			push @attachments, $match->new_attachment({
 				asset => "xt/test_file",
 				description => "A test file",
 			});
@@ -56,8 +56,8 @@ SKIP:
 		}
 	};
 
-	# Test index works:
-	is(@{$match->index}, @attachments, "index is same size");
+	# Test attachments works:
+	is(@{$match->attachments}, @attachments, "index is same size");
 
 	# Test attributes work:
 	subtest "attributes work" => sub
