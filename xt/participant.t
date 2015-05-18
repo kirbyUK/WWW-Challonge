@@ -61,14 +61,14 @@ SKIP:
 		# Make new participants, then get them in seed order:
 		$t->new_participant({ name => $_ }) for(1..20);
 		my @first = sort { $a->attributes->{seed} <=> $b->attributes->{seed} }
-			$t->participant_index;
+			$t->participants;
 
 		# Make the randomise call:
 		ok($test->randomize, "Randomise ok");
 
 		# Get the participants in seed order again:
 		my @secnd = sort { $a->attributes->{seed} <=> $b->attributes->{seed} }
-			$t->participant_index;
+			$t->participants;
 
 		# Check they are not the same:
 		ok(!eq_deeply(\@secnd, \@first), "Sorted arrays are not equal");

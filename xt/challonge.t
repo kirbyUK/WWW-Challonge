@@ -48,7 +48,7 @@ SKIP:
 	my $url = "";
 	my @chars = ("a".."z", "A".."Z", "_");
 	$url .= $chars[rand @chars] for(1..20);
-	my $new = $test->create({
+	my $new = $test->new_tournament({
 		name => "Perl Test",
 		url => $url,
 	});	

@@ -65,7 +65,6 @@ sub new
 		$client = LWP::UserAgent->new;
 
 		# Try to get some content and check the response code:
-		print "$HOST/tournaments.json?api_key=$key\n";
 		my $response = $client->get("$HOST/tournaments.json?api_key=$key");
 
 		# Check to see if the API key is valid:
