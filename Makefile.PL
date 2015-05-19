@@ -19,9 +19,10 @@ WriteMakefile(
 		'Test::Deep' => 0,
     },
     PREREQ_PM => {
-		"LWP::UserAgent"	=> 6.13,
-		"JSON"				=> 2.61,
-		"Carp"				=> 1.04,
+		"LWP::UserAgent"		=> 6.13,
+		"LWP::Protocol::https" 	=> 6.06,
+		"JSON"					=> 2.61,
+		"Carp"					=> 1.04,
     },
 	META_MERGE => {
 		"meta-spec" => { version => 2 },
