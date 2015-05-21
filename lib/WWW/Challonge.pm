@@ -512,7 +512,7 @@ sub __handle_error
 	}
 	else
 	{
-		croak $response->code;
+		croak "(" . $response->code . ") " . $response->decoded_content;
 	}
 }
 
