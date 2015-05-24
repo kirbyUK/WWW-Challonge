@@ -57,22 +57,12 @@ sub new
 	my $client;
 
 	# If the argument is a scalar, use it as the API key:
-	if(! ref $args)
+	if((! ref $args) && (defined $args))
 	{
 		$key = $args;
 
 		# Create an LWP useragent to interface Challonge:
 		$client = LWP::UserAgent->new;
-
-		# Try to get some content and check the response code:
-		my $response = $client->get("$HOST/tournaments.json?api_key=$key");
-
-		# Check to see if the API key is valid:
-		if($response->is_error)
-		{
-			croak "Challonge API key is invalid" if($response->code == 401);
-			__handle_error $response;
-		}
 	}
 	elsif(ref $args eq "HASH")
 	{
@@ -87,6 +77,12 @@ sub new
 	{
 		croak "Expected scalar or hashref";
 	}
+
+	# Try to get some content and check the response code:
+	my $response = $client->get("$HOST/tournaments.json?api_key=$key");
+
+	# Check for any errors:
+	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# Create and return the object:
 	my $c = { key => $key, client => $client };
@@ -185,7 +181,7 @@ sub tournaments
 		{
 			if($options->{$option} !~ /^all|pending|in_progress|ended$/)
 			{
-				croak "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{$option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -193,7 +189,7 @@ sub tournaments
 		{
 			if($options->{$option} !~ /^(single|double)_elimination|round_robin|swiss$/)
 			{
-				croak "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{$option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -201,7 +197,7 @@ sub tournaments
 		{
 			if($options->{$option} !~ /^\d{4}-\d{2}-\d{2}$/)
 			{
-				croak "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{$option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -209,7 +205,7 @@ sub tournaments
 		{
 			if($options->{$option} !~ /^[a-zA-Z0-9_]*$/)
 			{
-				croak "Argument '" . $options->{option} .
+				croak "Argument '" . $options->{$option} .
 					"' for option '$option' is invalid";
 			}
 		}
@@ -257,6 +253,9 @@ sub tournament
 {
 	my $self = shift;
 	my $url = shift;
+
+	# Give an error if no tournament is given:
+	croak "No tournament specified" unless(defined $url);
 
 	# Get the key and client:
 	my $key = $self->{key};
@@ -466,7 +465,7 @@ sub new_tournament
 	my $client = $self->{client};
 
 	# Fail if name and URL aren't given:
-	if((! defined $args->{name}) && (! defined $args->{url}))
+	if((! defined $args->{name}) || (! defined $args->{url}))
 	{
 		croak "Name and URL are required to create a tournament";
 	}

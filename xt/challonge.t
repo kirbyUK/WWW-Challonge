@@ -25,7 +25,7 @@ SKIP:
 	{
 		$test = new_ok("WWW::Challonge" => [ $key ]);
 		eval { my $test2 = WWW::Challonge->new("foo"); } or my $at = $@;
-		like($at, qr/API key is invalid/, "Dies on bad API key");
+		like($at, qr/Invalid API key/, "Dies on bad API key");
 	};
 
 	# Test we can get an arrayref of all the user's tournaments:
