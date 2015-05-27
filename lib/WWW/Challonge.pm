@@ -8,21 +8,6 @@ use 5.010;
 use strict;
 use warnings;
 
-sub tofile
-{
-	my $response = shift;
-	my $sub = shift;
-
-	print "-------------------\n";
-	print "'$sub'\n";
-	print $response->code, "\n";
-	print $response->message, "\n";
-	print "-------------------\n";
-
-	open my $file, '>', "t/json/tournament/$sub.json";
-	print $file $response->decoded_content;
-}
-
 sub __handle_error;
 sub __json_request;
 
