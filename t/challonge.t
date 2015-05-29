@@ -61,12 +61,6 @@ $ua->map_response(qr{^$HOST/tournaments/notfound404.json\?api_key=success$},
 	$files{"not-found"}
 ));
 
-$ua->map_response(qr{^$HOST/tournaments/foo.json\?api_key=success$},
-	HTTP::Response->new('404', 'Not Found',
-	['Content-Type' => 'application/json'],
-	$files{"tournament-invalid"}
-));
-
 $ua->map_response(sub {
 	my $request = shift;
 	return (($request->uri =~ m{^$HOST/tournaments.json$}) &&
