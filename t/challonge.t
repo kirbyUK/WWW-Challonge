@@ -162,10 +162,6 @@ subtest "tournament works" => sub
 	is($tournament->attributes->{url}, "perl_test_1",
 		"Fetches correct tournament");
 
-	# Invalid argument:
-	eval { $tournament = $test->tournament("foo"); } or my $at = $@;
-	like($at, qr/tournament not found/, "Dies on unknown tournament");
-
 	# No argument:
 	eval { $tournament = $test->tournament; } or $at = $@;
 	like($at, qr/No tournament specified/, "Dies on no tournament");
