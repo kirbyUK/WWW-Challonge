@@ -163,7 +163,7 @@ subtest "tournament works" => sub
 		"Fetches correct tournament");
 
 	# No argument:
-	eval { $tournament = $test->tournament; } or $at = $@;
+	eval { $tournament = $test->tournament; } or my $at = $@;
 	like($at, qr/No tournament specified/, "Dies on no tournament");
 
 	# 404 error:
