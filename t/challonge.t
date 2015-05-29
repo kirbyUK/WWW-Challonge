@@ -55,10 +55,27 @@ $ua->map_response(qr{^$HOST/tournaments/perl_test_3.json\?api_key=success$},
 	$files{"new_tournament"}
 ));
 
+$ua->map_response(qr{^$HOST/tournaments/notfound404.json\?api_key=success$},
+	HTTP::Response->new('404', 'Not Found',
+	['Content-Type' => 'application/json'],
+	$files{"not-found"}
+));
+
 $ua->map_response(qr{^$HOST/tournaments/foo.json\?api_key=success$},
 	HTTP::Response->new('404', 'Not Found',
 	['Content-Type' => 'application/json'],
 	$files{"tournament-invalid"}
+));
+
+$ua->map_response(sub {
+	my $request = shift;
+	return (($request->uri =~ m{^$HOST/tournaments.json$}) &&
+		($request->method eq "POST") &&
+		($request->content =~ /perl_test_4/)) ? 1 : 0;
+	},
+	HTTP::Response->new('422', 'Unprocessable Entity',
+	['Content-Type' => 'application/json'],
+	$files{invalid_start_time}
 ));
 
 $ua->map_response(qr{^$HOST/tournaments.json$},
@@ -158,6 +175,10 @@ subtest "tournament works" => sub
 	# No argument:
 	eval { $tournament = $test->tournament; } or $at = $@;
 	like($at, qr/No tournament specified/, "Dies on no tournament");
+
+	# 404 error:
+	eval { $tournament = $test->tournament("notfound404"); } or $at = $@;
+	like($at, qr/tournament not found/, "Dies on 404");
 };
 
 # Tests we can create a tournament:
@@ -199,6 +220,16 @@ subtest "new_tournament works" => sub
 		url => "perl_test_3",
 	}); } or $at = $@;
 	like($at, qr/URL has already been taken/, "Dies on taken URL");
+
+	# Invalid start time:
+	eval { my $new = $test->new_tournament({
+		name => "perl_test_4",
+		url => "perl_test_4",
+		start_at => "2014-05-27T18:00:00,0-Z",
+		check_in_duration => 120,
+	}); } or $at = $@;
+	like($at, qr/Start time must be in the future/,
+		"Dies on invalid start time");
 };
 
 done_testing();
