@@ -73,6 +73,9 @@ sub update
 	# Do not operate on a dead tournament:
 	return __is_kill unless($self->{alive});
 
+	# Die on no errors:
+	croak "No arguments given" unless(defined $args);
+
 	# Get the key, REST client and tournament url:
 	my $key = $self->{key};
 	my $client = $self->{client};
@@ -177,7 +180,6 @@ sub process_check_ins
 	my $response = $client->request(WWW::Challonge::__json_request(
 		"$HOST/tournaments/$url/process_check_ins.json", "POST", $params));
 
-	# Check for any errors:
 	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	return 1;
@@ -562,6 +564,9 @@ sub participant
 	# Do not operate on a dead tournament:
 	return __is_kill unless($self->{alive});
 
+	# Die on no arguments:
+	croak "No arguments given" unless(defined $participant);
+
 	# Get the key, REST client and url:
 	my $key = $self->{key};
 	my $client = $self->{client};
@@ -576,8 +581,8 @@ sub participant
 	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# If so, create an object and return it:
-	my $p = WWW::Challonge::Participant->new(from_json($client->responseContent),
-		$key, $client);
+	my $p = WWW::Challonge::Participant->new(
+		from_json($response->decoded_content), $key, $client);
 	return $p;
 }
 
@@ -642,9 +647,9 @@ sub new_participant
 
 	# Fail if name or challonge_username or email is not provided:
 	unless((defined $args->{name}) || (defined $args->{challonge_username}) ||
-		defined $args->{email})
+		(defined $args->{email}))
 	{
-		carp "Name, email or Challonge username are required to create a new ".
+		croak "Name, email or Challonge username are required to create a new ".
 			"participant.\n";
 		return undef;
 	}
@@ -728,6 +733,9 @@ sub match
 	# Do not operate on a dead tournament:
 	return __is_kill unless($self->{alive});
 
+	# Die on no arguments:
+	croak "No arguments given" unless(defined $match);
+
 	# Get the key, REST client and url:
 	my $key = $self->{key};
 	my $client = $self->{client};
@@ -742,7 +750,7 @@ sub match
 	WWW::Challonge::__handle_error $response if($response->is_error);
 
 	# If so, create an object and return it:
-	my $m = WWW::Challonge::Match->new(from_json($client->responseContent),
+	my $m = WWW::Challonge::Match->new(from_json($response->decoded_content),
 		$key, $client);
 	return $m;
 }
