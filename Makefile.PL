@@ -17,12 +17,14 @@ WriteMakefile(
     BUILD_REQUIRES => {
         'Test::More' => 0,
 		'Test::Deep' => 0,
+		'Test::LWP::UserAgent' => 0.029,
+		'JSON' => 2.61,
     },
     PREREQ_PM => {
-		"LWP::UserAgent"		=> 6.13,
-		"LWP::Protocol::https" 	=> 6.06,
-		"JSON"					=> 2.61,
-		"Carp"					=> 1.04,
+		'LWP::UserAgent'		=> 6.13,
+		'LWP::Protocol::https' 	=> 6.06,
+		'JSON'					=> 2.61,
+		'Carp'					=> 1.04,
     },
 	META_MERGE => {
 		"meta-spec" => { version => 2 },

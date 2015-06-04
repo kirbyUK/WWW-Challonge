@@ -4,7 +4,6 @@ use strict;
 use WWW::Challonge;
 use Test::More tests => 14;
 use Test::LWP::UserAgent;
-use Data::Dumper;
 
 # Read the JSON files:
 my $DIR = "t/json/tournament";

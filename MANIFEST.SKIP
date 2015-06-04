@@ -58,6 +58,9 @@
 test.pl
 bulk_add
 xt/key
+tofile
+commit
+err
 
 # The build file:
 WWW-Challonge

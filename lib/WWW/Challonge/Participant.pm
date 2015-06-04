@@ -74,6 +74,9 @@ sub update
 	# Do not operate on a dead participant:
 	return __is_kill unless($self->{alive});
 
+	# Die on no errors:
+	croak "No arguments given" unless(defined $args);
+
 	# Get the key, REST client, tournament url and id:
 	my $key = $self->{key};
 	my $client = $self->{client};
@@ -120,7 +123,7 @@ sub check_in
 	my $HOST = $WWW::Challonge::HOST;
 
 	# Add the API key:
-	my $params = to_json({ api_key => $key });
+	my $params = { api_key => $key };
 
 	# Make the POST call:
 	my $response = $client->request(WWW::Challonge::__json_request(
