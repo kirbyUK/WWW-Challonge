@@ -107,7 +107,7 @@ sub update
 		if((ref $args eq "HASH") && ((! defined $args->{scores_csv}) ||
 			(ref $args->{scores_csv} ne "ARRAY")))
 		{
-			carp "Required argument 'scores_csv' as an array reference";
+			croak "Required argument 'scores_csv' as an array reference";
 			return undef;
 		}
 
@@ -309,6 +309,9 @@ sub attachment
 	my $self = shift;
 	my $atth = shift;
 
+	# Die on no arguments:
+	croak "No arguments given" unless(defined $atth);
+
 	# Get the key, REST client, tournament url and id:
 	my $key = $self->{key};
 	my $client = $self->{client};
@@ -375,6 +378,9 @@ sub new_attachment
 	my $self = shift;
 	my $args = shift;
 
+	# Die on no arguments:
+	croak "No arguments given" unless(defined $args);
+
 	# Get the key, REST client, tournament url and id:
 	my $key = $self->{key};
 	my $client = $self->{client};
@@ -427,7 +433,7 @@ sub __args_are_valid
 	{
 		if($result !~ /^\d*-\d*$/)
 		{
-			carp "Results must be given in the format \"x-y\", where x and y ".
+			croak "Results must be given in the format \"x-y\", where x and y ".
 			"are integers";
 			return undef;
 		}
@@ -441,7 +447,7 @@ sub __args_are_valid
 			next unless(defined $args->{$arg});
 			if($args->{$arg} !~ /^\d*$/)
 			{
-				carp "Argument '", $arg, "' must be an integer";
+				croak "Argument '", $arg, "' must be an integer";
 				return undef;
 			}
 		}

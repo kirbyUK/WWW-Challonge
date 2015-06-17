@@ -227,7 +227,7 @@ sub __args_are_valid
 		{
 			if(! -f $args->{$arg})
 			{
-				carp "No such file: '" . $args->{$arg} . "'";
+				croak "No such file: '" . $args->{$arg} . "'";
 				return undef;
 			}
 		}
@@ -235,7 +235,7 @@ sub __args_are_valid
 		{
 			if($args->{$arg} !~ m{^(?:https?|ftp)://})
 			{
-				carp "URL must start with 'http://', 'https://' or 'ftp://'";
+				croak "URL must start with 'http://', 'https://' or 'ftp://'";
 				return undef;
 			}
 		}
