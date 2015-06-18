@@ -54,13 +54,11 @@
 # Avoid MYMETA files
 ^MYMETA\.
 
-# Random development files
-test.pl
-bulk_add
+# The test key
 xt/key
-tofile
-commit
-err
+
+# GitHub README
+README.md
 
 # The build file:
 WWW-Challonge
