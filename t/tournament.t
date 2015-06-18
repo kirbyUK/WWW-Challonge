@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 use WWW::Challonge;
-use Test::More tests => 14;
+use Test::More tests => 15;
 use Test::LWP::UserAgent;
 
 # Read the JSON files:
@@ -348,7 +348,7 @@ subtest "process_check_ins works" => sub
 	my $tournament = $c->new_tournament({
 		name => "perl_test_4",
 		url => "perl_test_4",
-		start_at => "2015-05-27T18:00:00,0-Z",
+		start_at => "2015-05-27T18:00:00Z",
 		check_in_duration => 120,
 	});
 	ok($tournament->process_check_ins, "Process check ins works ok");
@@ -367,7 +367,7 @@ subtest "abort_check_in works" => sub
 	my $tournament = $c->new_tournament({
 		name => "perl_test_4",
 		url => "perl_test_4",
-		start_at => "2015-05-27T18:00:00,0-Z",
+		start_at => "2015-05-27T18:00:00Z",
 		check_in_duration => 120,
 	});
 	ok($tournament->abort_check_in, "Aborts check in ok");
@@ -558,4 +558,24 @@ subtest "update works" => sub
 		$files{"update-unathorised"}
 	));
 };
+
+# Explicitly test the ISO8601 regex because it's big and was added later:
+subtest "iso8601 works" => sub
+{
+	# Examples all taken from <https://en.wikipedia.org/?title=ISO_8601>:
+	my @dates = (
+		{ start_at => "2015-06-18" },
+		{ start_at => "2015-06-18T00:59:34+00:00" },
+		{ start_at => "2015-06-18T00:59:34Z" },
+		{ start_at => "2015-W25" }, 
+		{ start_at => "2015-W25-4" },
+		{ start_at => "2015-169" },
+	);
+	for my $date(@dates)
+	{
+		ok(WWW::Challonge::Tournament::__args_are_valid($date),
+			"'$date->{start_at}' is ok");
+	}
+};
+
 done_testing();

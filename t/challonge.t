@@ -215,7 +215,7 @@ subtest "new_tournament works" => sub
 	eval { my $new = $test->new_tournament({
 		name => "perl_test_4",
 		url => "perl_test_4",
-		start_at => "2014-05-27T18:00:00,0-Z",
+		start_at => "2014-05-27T18:00:00Z",
 		check_in_duration => 120,
 	}); } or $at = $@;
 	like($at, qr/Start time must be in the future/,

@@ -906,12 +906,52 @@ sub __args_are_valid
 	for my $arg(@{$valid_args{datetime}})
 	{
 		next unless(defined $args->{$arg});
-		# Make sure the argument is a valid datetime:
-#		if($args->{$arg} !~ /^$/)
-#		{
-#			carp "Value '", $args->{$arg}, "' is not a valid datetime for " .
-#				"argument '" . $arg . "'";
-#		}
+
+		# Check if we have a DateTime object:
+		eval { $args->{$arg}->isa("DateTime") } or my $at = $@;
+
+		# If so, get the ISO8601 string:
+		if($at)
+		{
+			$args->{$arg} = $args->{$arg}->iso8601;
+		}
+		# If not make sure the argument is a valid datetime:
+		elsif($args->{$arg} !~ /
+			^\d{4}- # The year, mandatory in all cases
+				(?:
+					(?:
+						\d{2}-\d{2} # Month and day
+							(?:
+								T\d{2}:\d{2}:\d{2} # Hours, minutes, seconds
+									(?:
+										(?:
+											\+\d{2}:\d{2} # Timezone
+										)
+										|
+										(?:
+											Z # UTC
+										)
+									)
+							)?
+					)
+					|
+					(?:
+						W\d{2} # Week
+							(?:
+								-\d # Date with week number
+							)?
+					)
+					|
+					(?:
+						\d{3} # Ordinal date
+					)
+				)
+			$
+		/x)
+		{
+			croak "Value '", $args->{$arg}, "' is not a valid datetime for " .
+				"argument '" . $arg . "'";
+		}
 	}
 
 	# Finally, check if there are any unrecognised arguments, but just ignore

@@ -283,7 +283,7 @@ subtest "check_in works" => sub
 	my $participant = $t->new_participant({ name => "Alice" });
 	my $late_participant = $t->new_participant({ name => "Bob" });
 	$t->update({
-		start_at => "2015-06-01T23:00:00,0-Z",
+		start_at => "2015-06-01T23:00:00Z",
 		 check_in_duration => 120,
 	});
 	ok($participant->check_in, "Participant checks in");

@@ -139,13 +139,13 @@ Gets all tournaments of the given type:
 
 =item created_after
 
-Gets all the tournaments created after the given date. Can be given as a string
-(YYYY-MM-DD) or as a C<DateTime> object.
+Gets all the tournaments created after the given date. Can be given as an
+ISO8601 date string or as a C<DateTime> object.
 
 =item created_before
 
-Gets all the tournaments created before the given date. Can be given as a string
-(YYYY-MM-DD) or as a C<DateTime> object.
+Gets all the tournaments created before the given date. Can be given as an
+ISO8601 string or as a C<DateTime> object.
 
 =item subdomain
 
@@ -416,6 +416,7 @@ True/false. Hide this tournament from the public browsable index and your
 profile. Default is false.
 
 =item notify_users_when_matches_open
+r
 
 True/false. Send registered Challonge users an email when matches open up
 for them. Default is false.

@@ -3,6 +3,7 @@ Revision history for WWW-Challonge
 1.00	2015-06-18
 		* Changed function names to make sense
 		* Added test files for all packages
+		* Added DateTime validation for creating or updating tournaments
 
 0.31	2015-05-16
 		* Updated MANIFEST
