@@ -186,6 +186,7 @@ subtest "update works" => sub
 	ok($matches[0]->update(["3-1"]), "Updates ok");
 	like($ua->last_http_request_sent->content, qr/"winner_id":25012378/,
 		"Selects winner correctly");
+	is($ua->last_http_request_sent->method, "PUT", "Sends PUT request");
 
 	# Incorrect score format:
 	eval { $matches[0]->update(["1/2"]) } or my $at = $@;
