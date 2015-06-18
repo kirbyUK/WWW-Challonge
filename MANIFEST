@@ -11,7 +11,16 @@ MANIFEST.SKIP
 README
 README.md
 t/00-load.t
+t/attachment.t
 t/challonge.t
+t/json/attachment/attachment.json
+t/json/attachment/destroy.json
+t/json/attachment/matches.json
+t/json/attachment/new_attachment.json
+t/json/attachment/perl_test_1.json
+t/json/attachment/tournaments.json
+t/json/attachment/update_asset.json
+t/json/attachment/update_url.json
 t/json/challonge/invalid_start_time.json
 t/json/challonge/new-fail.json
 t/json/challonge/new_tournament-taken.json

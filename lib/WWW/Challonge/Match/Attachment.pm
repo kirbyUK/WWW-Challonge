@@ -73,6 +73,9 @@ sub update
 	# Do not operate on a dead attachment:
 	return __is_kill unless($self->{alive});
 
+	# Die on no errors:
+	croak "No arguments given" unless(defined $args);
+
 	# Get the key, REST client, tournament url and id:
 	my $key = $self->{key};
 	my $client = $self->{client};
