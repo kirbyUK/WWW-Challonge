@@ -140,12 +140,12 @@ Gets all tournaments of the given type:
 =item created_after
 
 Gets all the tournaments created after the given date. Can be given as an
-ISO8601 date string or as a C<DateTime> object.
+ISO8601 date string or as a L<DateTime> object.
 
 =item created_before
 
 Gets all the tournaments created before the given date. Can be given as an
-ISO8601 string or as a C<DateTime> object.
+ISO8601 string or as a L<DateTime> object.
 
 =item subdomain
 
