@@ -35,7 +35,7 @@ WriteMakefile(
 				web => "https://github.com/kirbyUK/WWW-Challonge",
 			},
 		},
-		release_status => "testing",
+		release_status => "stable",
 	},
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'WWW-Challonge-*' },

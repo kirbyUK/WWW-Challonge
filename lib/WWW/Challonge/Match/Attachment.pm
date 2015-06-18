@@ -18,11 +18,11 @@ attachement within a Challonge tournament.
 
 =head1 VERSION
 
-Version 0.31
+Version 1.00
 
 =cut
 
-our $VERSION = '0.31';
+our $VERSION = '1.00';
 
 =head1 SUBROUTINES/METHODS
 
