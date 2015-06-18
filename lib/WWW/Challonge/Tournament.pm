@@ -766,7 +766,6 @@ that has been successfully destroyed.
 sub __is_kill
 {
 	croak "Tournament has been destroyed";
-	return undef;
 }
 
 =head2 __args_are_valid
@@ -779,13 +778,6 @@ a tournament.
 sub __args_are_valid
 {
 	my $args = shift;
-
-	# Check it is a hashref:
-	unless(ref $args eq "HASH")
-	{
-		carp "Argument must be a hashref";
-		return undef;
-	}
 
 	# The possible parameters, grouped together by the kind of input they take.
 	my %valid_args = (

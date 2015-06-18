@@ -329,7 +329,7 @@ subtest "destroy works" => sub
 		attributes => $t->can("attributes"),
 		participants => $t->can("participants"),
 		participant => $t->can("participant"),
-		new_participant => $t->can("participant"),
+		new_participant => $t->can("new_participant"),
 		matches => $t->can("matches"),
 		match => $t->can("match"),
 	);
