@@ -900,10 +900,11 @@ sub __args_are_valid
 		next unless(defined $args->{$arg});
 
 		# Check if we have a DateTime object:
-		eval { $args->{$arg}->isa("DateTime") } or my $at = $@;
+		my $is_datetime;
+		eval { $is_datetime = $args->{$arg}->can("iso8601") };
 
 		# If so, get the ISO8601 string:
-		if($at)
+		if($is_datetime)
 		{
 			$args->{$arg} = $args->{$arg}->iso8601;
 		}
