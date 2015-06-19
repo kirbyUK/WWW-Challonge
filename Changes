@@ -1,5 +1,8 @@
 Revision history for WWW-Challonge
 
+1.01	2015-05-19
+		* Fixed issues with versions of Perl less than 5.18
+
 1.00	2015-06-18
 		* Changed function names to make sense
 		* Added test files for all packages
